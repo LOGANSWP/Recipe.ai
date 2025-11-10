@@ -52,7 +52,7 @@ export default function Cook() {
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         if (visible) setIdx(Number(visible.target.dataset.index));
       },
-      { root: containerRef.current, threshold: [0.5, 0.75] }
+      { root: containerRef.current, threshold: [0.35, 0.6], rootMargin: "0px 0px -30% 0px" }
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
@@ -189,7 +189,7 @@ export default function Cook() {
       </div>
 
       {showOverview && (
-        <div className="fixed inset-0 z-20 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-4xl rounded-2xl bg-white border shadow-xl">
             <div className="flex items-center justify-between px-5 py-3 border-b">
               <h3 className="text-lg font-semibold">Step Overview</h3>
