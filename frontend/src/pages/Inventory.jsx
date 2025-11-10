@@ -95,33 +95,66 @@ export default function Inventory() {
     setModalType(null);
   };
 
-  const handleSave = (updatedItem) => {
-    if (modalType === "ingredient") {
-      setIngredients((prev) => {
-        const exists = prev.find((item) => item.id === updatedItem.id);
-        if (exists) {
-          // It's an update, so map
-          return prev.map((item) =>
-            item.id === updatedItem.id ? updatedItem : item
+  // [MODIFIED] Handles saving with file upload logic
+  const handleSave = (updatedItem, file) => {
+    // This inner function does the actual state update
+    const saveItemToState = (itemWithFinalPicture) => {
+      if (modalType === "ingredient") {
+        setIngredients((prev) => {
+          const exists = prev.find(
+            (item) => item.id === itemWithFinalPicture.id
           );
-        } else {
-          // It's a new item, so add
-          return [...prev, updatedItem];
-        }
-      });
+          if (exists) {
+            return prev.map((item) =>
+              item.id === itemWithFinalPicture.id ? itemWithFinalPicture : item
+            );
+          } else {
+            return [...prev, itemWithFinalPicture];
+          }
+        });
+      } else {
+        setKitchenware((prev) => {
+          const exists = prev.find(
+            (item) => item.id === itemWithFinalPicture.id
+          );
+          if (exists) {
+            return prev.map((item) =>
+              item.id === itemWithFinalPicture.id ? itemWithFinalPicture : item
+            );
+          } else {
+            return [...prev, itemWithFinalPicture];
+          }
+        });
+      }
+    };
+
+    // --- Logic for handling the picture ---
+
+    if (file) {
+      // 1. A new file was uploaded
+      // Convert to base64 to store in state (simulates upload)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const itemWithBase64 = { ...updatedItem, picture: reader.result };
+        saveItemToState(itemWithBase64);
+      };
+      reader.readAsDataURL(file);
     } else {
-      setKitchenware((prev) => {
-        const exists = prev.find((item) => item.id === updatedItem.id);
-        if (exists) {
-          // It's an update, so map
-          return prev.map((item) =>
-            item.id === updatedItem.id ? updatedItem : item
-          );
-        } else {
-          // It's a new item, so add
-          return [...prev, updatedItem];
-        }
-      });
+      // 2. No new file was uploaded
+      let itemToSave = { ...updatedItem };
+
+      // If picture is "" (from "Remove Image") or a blob (stale preview),
+      // set the default placeholder.
+      if (!itemToSave.picture || itemToSave.picture.startsWith("blob:")) {
+        const itemName = itemToSave.name
+          ? encodeURIComponent(itemToSave.name)
+          : "Item";
+        itemToSave.picture = `https://placehold.co/300x200/e0f2fe/075985?text=${itemName}`;
+      }
+
+      // 3. If picture is a regular http:// URL, it's unchanged.
+      // Save item to state immediately
+      saveItemToState(itemToSave);
     }
   };
 
