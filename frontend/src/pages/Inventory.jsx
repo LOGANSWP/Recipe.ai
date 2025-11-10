@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { IoSearchOutline } from "react-icons/io5";
 import { FiPlus } from "react-icons/fi";
+import { LuScanText } from "react-icons/lu";
 import InventoryItemCard from "../components/InventoryItemCard";
 import DetailedCard from "../components/DetailedCard";
 import { getDaysUntilExpiry } from "../components/InventoryItemCard";
@@ -209,20 +210,35 @@ export default function Inventory() {
 
           {/* --- Ingredients Section --- */}
           <section className="mb-10">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold text-green-700 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+              {/* Left: Section title */}
+              <h2 className="text-2xl font-semibold text-green-700">
                 Ingredients
               </h2>
-              {/* Add Ingredient Button */}
-              <button
-                onClick={() => handleAddNew("ingredient")}
-                className="flex items-center justify-center bg-green-600 text-white px-4 py-2 rounded-lg
-                           font-medium shadow-md hover:bg-green-700 transition-colors
-                           focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-              >
-                <FiPlus className="h-5 w-5 mr-2" />
-                Add Ingredient
-              </button>
+
+              {/* Right: Buttons grouped */}
+              <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+                {/* Scan Receipt Button */}
+                <button
+                  className="flex items-center justify-center bg-orange-600 text-white px-4 py-2 rounded-lg
+                   font-medium shadow-md hover:bg-orange-700 transition-colors
+                   focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                >
+                  <LuScanText className="h-5 w-5 mr-2" />
+                  Scan Receipt
+                </button>
+
+                {/* Add Ingredient Button */}
+                <button
+                  onClick={() => handleAddNew("ingredient")}
+                  className="flex items-center justify-center bg-green-600 text-white px-4 py-2 rounded-lg
+                   font-medium shadow-md hover:bg-green-700 transition-colors
+                   focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                >
+                  <FiPlus className="h-5 w-5 mr-2" />
+                  Add Ingredient
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {filteredIngredients.map((item) => (
@@ -246,7 +262,7 @@ export default function Inventory() {
           {/* --- Kitchenware Section --- */}
           <section>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-semibold text-green-700">
+              <h2 className="text-2xl font-semibold text-gray-700">
                 Kitchenware
               </h2>
               <button
