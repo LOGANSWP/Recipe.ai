@@ -97,13 +97,31 @@ export default function Inventory() {
 
   const handleSave = (updatedItem) => {
     if (modalType === "ingredient") {
-      setIngredients((prev) =>
-        prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
-      );
+      setIngredients((prev) => {
+        const exists = prev.find((item) => item.id === updatedItem.id);
+        if (exists) {
+          // It's an update, so map
+          return prev.map((item) =>
+            item.id === updatedItem.id ? updatedItem : item
+          );
+        } else {
+          // It's a new item, so add
+          return [...prev, updatedItem];
+        }
+      });
     } else {
-      setKitchenware((prev) =>
-        prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
-      );
+      setKitchenware((prev) => {
+        const exists = prev.find((item) => item.id === updatedItem.id);
+        if (exists) {
+          // It's an update, so map
+          return prev.map((item) =>
+            item.id === updatedItem.id ? updatedItem : item
+          );
+        } else {
+          // It's a new item, so add
+          return [...prev, updatedItem];
+        }
+      });
     }
   };
 
@@ -136,8 +154,8 @@ export default function Inventory() {
     <>
       <main className="bg-gray-50 min-h-screen p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header Bar: Title, Search, and Add Button */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          {/* Header Bar: Title, Search */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
             <h1 className="text-4xl font-bold text-gray-800">My Inventory</h1>
 
             <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
@@ -153,7 +171,15 @@ export default function Inventory() {
                 />
                 <IoSearchOutline className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
               </div>
+            </div>
+          </div>
 
+          {/* --- Ingredients Section --- */}
+          <section className="mb-10">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold text-green-700 mb-4">
+                Ingredients
+              </h2>
               {/* Add Ingredient Button */}
               <button
                 onClick={() => handleAddNew("ingredient")}
@@ -165,13 +191,6 @@ export default function Inventory() {
                 Add Ingredient
               </button>
             </div>
-          </div>
-
-          {/* --- Ingredients Section --- */}
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold text-green-700 mb-4">
-              My Ingredients
-            </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {filteredIngredients.map((item) => (
                 <InventoryItemCard
@@ -195,7 +214,7 @@ export default function Inventory() {
           <section>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-semibold text-green-700">
-                My Kitchenware
+                Kitchenware
               </h2>
               <button
                 onClick={() => handleAddNew("kitchenware")}
