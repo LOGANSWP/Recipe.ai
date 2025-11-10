@@ -14,7 +14,8 @@ export default function DetailedCard({
   const [formData, setFormData] = useState(item);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadError, setUploadError] = useState(null);
-  const blobUrlRef = useRef(null); // Ref to store the blob URL for cleanup
+  const [nameError, setNameError] = useState(""); // new state for validation
+  const blobUrlRef = useRef(null);
   const isIngredient = type === "ingredient";
 
   // Cleanup blob URL on unmount
@@ -26,52 +27,64 @@ export default function DetailedCard({
     };
   }, []);
 
+  // Validate name field on change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "name") {
+      if (!value.trim()) {
+        setNameError("Name is required.");
+      } else {
+        setNameError("");
+      }
+    }
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Check file size
     if (file.size > 2 * 1024 * 1024) {
-      // 2MB
       setUploadError("File is too large (max 2MB).");
       setSelectedFile(null);
       return;
     }
 
     setUploadError(null);
-    setSelectedFile(file); // Store the file object
+    setSelectedFile(file);
 
-    // Clean up any previous blob URL
     if (blobUrlRef.current) {
       URL.revokeObjectURL(blobUrlRef.current);
     }
 
-    // Create a new blob URL for preview
     const newPreviewUrl = URL.createObjectURL(file);
-    blobUrlRef.current = newPreviewUrl; // Store its ref for cleanup
-    setFormData((prev) => ({ ...prev, picture: newPreviewUrl })); // Set preview
+    blobUrlRef.current = newPreviewUrl;
+    setFormData((prev) => ({ ...prev, picture: newPreviewUrl }));
   };
 
   const handleRemoveImage = () => {
-    // Clean up blob URL if it exists
     if (blobUrlRef.current) {
       URL.revokeObjectURL(blobUrlRef.current);
       blobUrlRef.current = null;
     }
     setSelectedFile(null);
-    setFormData((prev) => ({ ...prev, picture: "" })); // Clear the picture
+    setFormData((prev) => ({ ...prev, picture: "" }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData, selectedFile); // Pass both form data and the file
+
+    if (!formData.name.trim()) {
+      setNameError("Name is required.");
+      return;
+    }
+
+    onSave(formData, selectedFile);
     onClose();
   };
+
+  const isSaveDisabled = !formData.name.trim();
 
   return (
     <div
@@ -82,7 +95,7 @@ export default function DetailedCard({
         className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-auto z-50 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header with Image */}
+        {/* Header */}
         <div className="relative">
           <img
             src={
@@ -106,7 +119,7 @@ export default function DetailedCard({
           </button>
         </div>
 
-        {/* Modal Content / Form */}
+        {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <h2 className="text-2xl font-bold text-gray-900">
             {isIngredient ? "Edit Ingredient" : "Edit Kitchenware"}
@@ -118,7 +131,7 @@ export default function DetailedCard({
                 htmlFor="name"
                 className="block text-sm font-medium text-gray-700"
               >
-                Name
+                Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -126,9 +139,14 @@ export default function DetailedCard({
                 id="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                className={`mt-1 block w-full rounded-md border ${
+                  nameError ? "border-red-500" : "border-gray-300"
+                } shadow-sm focus:border-green-500 focus:ring-green-500`}
                 placeholder="e.g., Chicken Breast"
               />
+              {nameError && (
+                <p className="text-red-500 text-xs mt-1">{nameError}</p>
+              )}
             </div>
 
             <div>
@@ -168,7 +186,7 @@ export default function DetailedCard({
               </div>
             )}
 
-            {/* [NEW] Image Upload Field */}
+            {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Image
@@ -191,12 +209,10 @@ export default function DetailedCard({
                 onChange={handleImageChange}
               />
 
-              {/* [NEW] Upload Error Message */}
               {uploadError && (
                 <p className="text-red-500 text-xs mt-1">{uploadError}</p>
               )}
 
-              {/* [NEW] Remove Image Button */}
               {formData.picture && (
                 <button
                   type="button"
@@ -212,12 +228,17 @@ export default function DetailedCard({
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
-              className="flex-1 justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm 
-                         text-base font-medium text-white bg-green-600 hover:bg-green-700
-                         focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              disabled={isSaveDisabled}
+              className={`flex-1 justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white 
+                ${
+                  isSaveDisabled
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                }`}
             >
               Save Changes
             </button>
+
             <button
               type="button"
               onClick={() => {
