@@ -1,0 +1,75 @@
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
+
+import AIRecommendation from "./AIRecommendation";
+import CreatePlanForm from "./CreatePlanForm";
+import PlanList from "./PlanList";
+
+const mockPlans = [
+  {
+    id: "p1",
+    title: "Quick Dinner for 2",
+    tags: ["Dinner", "Quick", "Low-Cal"],
+    created_at: "2025-11-10 18:30",
+  },
+  {
+    id: "p2",
+    title: "High Protein Lunch",
+    tags: ["Lunch", "Protein"],
+    created_at: "2025-11-09 12:00",
+  },
+];
+
+const Planning = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [plans, setPlans] = useState(mockPlans);
+
+  const filteredPlans = useMemo(() => {
+    return plans.filter((plan) => {
+      const text = `${plan.title} ${plan.tags.join(" ")}`
+      return text.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }, [searchTerm, plans]);
+
+  const handleGeneratePlan = (payload) => {
+    const newPlan = {
+      id: "plan " + Date.now(),
+      title: payload.prompt || "AI Generated Plan",
+      tags: [payload.meal_type, `${payload.people_nums} people`],
+      created_at: new Date().toLocaleString(),
+    };
+
+    setPlans((prev) => [newPlan, ...prev]);
+  };
+
+  return (
+    <main className="bg-gray-50 min-h-screen p-4 md:p-8">
+      <div className="max-w-7xl mx-auto flex flex-col gap-10">
+        <h1 className="text-4xl font-bold text-gray-800">
+          Planning
+        </h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          <div className="lg:col-span-1 h-full">
+            <AIRecommendation />
+          </div>
+
+          <div className="lg:col-span-2 h-full">
+            <CreatePlanForm onGenerate={handleGeneratePlan} />
+          </div>
+        </div>
+
+        <PlanList
+          plans={filteredPlans}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
+      </div>
+    </main>
+  );
+};
+
+export default Planning;

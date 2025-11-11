@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Cook from "./pages/Cook";
 import Inventory from "./pages/Inventory";
+import Planning from "./pages/planning";
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/cook" element={<Cook />} />
         <Route path="/inventory" element={<Inventory />} />
+        <Route path="/planning" element={<Planning />} />
       </Routes>
     </BrowserRouter>
   );
