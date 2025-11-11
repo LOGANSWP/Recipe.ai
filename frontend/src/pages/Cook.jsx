@@ -115,12 +115,12 @@ export default function Cook() {
       <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
 
       <div className="sticky top-0 z-30 bg-white/70 backdrop-blur border-b">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-5xl mx-auto px-4 flex items-center gap-3">
           <button
             onClick={() => nav(-1)}
-            className="px-3 py-1.5 rounded-lg border hover:bg-gray-50 flex items-center gap-2"
+            className="px-1 py-1 hover:bg-gray-50 flex items-center gap-2"
           >
-            <FaArrowLeft /> Back
+              <FaArrowLeft />
           </button>
           <h1 className="text-xl font-bold text-center flex-1">{demo.title}</h1>
           <div className="flex items-center gap-3">
@@ -129,7 +129,7 @@ export default function Cook() {
             </div>
             <button
               onClick={() => setShowOverview(true)}
-              className="px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 flex items-center gap-2"
+              className="px-1 py-1 rounded-lg bg-green-600 text-white hover:bg-green-700 flex items-center gap-2"
             >
               <FaListUl /> Overview
             </button>
