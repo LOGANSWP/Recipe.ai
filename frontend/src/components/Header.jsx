@@ -30,6 +30,9 @@ export default function Header() {
           <Link to="/inventory">
             <li className={`hidden sm:inline ${linkStyles}`}>Inventory</li>
           </Link>
+          <Link to="/planning">
+            <li className={`hidden sm:inline ${linkStyles}`}>Planning</li>
+          </Link>
 
           {/* Profile link styled as a button */}
           <Link to="/profile">
