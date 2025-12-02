@@ -15,6 +15,7 @@ export default function DetailedCard({
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadError, setUploadError] = useState(null);
   const [nameError, setNameError] = useState(""); // new state for validation
+  const [isSaving, setIsSaving] = useState(false);
   const blobUrlRef = useRef(null);
   const isIngredient = type === "ingredient";
 
@@ -72,19 +73,24 @@ export default function DetailedCard({
     setFormData((prev) => ({ ...prev, picture: "" }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.name.trim()) {
       setNameError("Name is required.");
       return;
     }
-
-    onSave(formData, selectedFile);
+    setIsSaving(true);
+    await onSave(formData, selectedFile);
+    setIsSaving(false);
     onClose();
   };
 
   const isSaveDisabled = !formData.name.trim();
+
+  // Logic to determine if we show delete button:
+  // Only show delete if the item has an ID (meaning it exists in the database).
+  const showDelete = !!item.id;
 
   return (
     <div
@@ -228,29 +234,32 @@ export default function DetailedCard({
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
-              disabled={isSaveDisabled}
+              disabled={isSaveDisabled || isSaving}
               className={`flex-1 justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white 
                 ${
-                  isSaveDisabled
+                  isSaveDisabled || isSaving
                     ? "bg-gray-300 cursor-not-allowed"
                     : "bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                 }`}
             >
-              Save Changes
+              {isSaving ? "Saving..." : "Save Changes"}
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                onDelete(item.id, type);
-                onClose();
-              }}
-              className="flex-none justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm
+            {/* Only show Delete button if the item actually exists in the DB */}
+            {showDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete(item.id, type);
+                  onClose();
+                }}
+                className="flex-none justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm
                          text-base font-medium text-white bg-orange-600 hover:bg-orange-700
                          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-            >
-              <FaRegTrashCan className="h-5 w-5" />
-            </button>
+              >
+                <FaRegTrashCan className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </form>
       </div>
