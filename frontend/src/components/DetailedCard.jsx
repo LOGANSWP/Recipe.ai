@@ -27,7 +27,8 @@ export default function DetailedCard({
   const [formData, setFormData] = useState(item);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadError, setUploadError] = useState(null);
-  const [nameError, setNameError] = useState(""); // new state for validation
+  const [nameError, setNameError] = useState(""); // state for validation
+  const [quantityError, setQuantityError] = useState(""); // state for validation
   const [isSaving, setIsSaving] = useState(false);
   const blobUrlRef = useRef(null);
   const isIngredient = type === "ingredient";
@@ -51,6 +52,14 @@ export default function DetailedCard({
         setNameError("Name is required.");
       } else {
         setNameError("");
+      }
+    }
+
+    if (name === "quantity") {
+      if (!value.trim()) {
+        setQuantityError("Quantity is required.");
+      } else {
+        setQuantityError("");
       }
     }
   };
@@ -93,13 +102,19 @@ export default function DetailedCard({
       setNameError("Name is required.");
       return;
     }
+
+    if (!formData.quantity.trim()) {
+      setQuantityError("Quantity is required.");
+      return;
+    }
+
     setIsSaving(true);
     await onSave(formData, selectedFile);
     setIsSaving(false);
     onClose();
   };
 
-  const isSaveDisabled = !formData.name.trim();
+  const isSaveDisabled = !formData.name.trim() || !formData.quantity.trim();
 
   // Logic to determine if we show delete button:
   // Only show delete if the item has an ID (meaning it exists in the database).
@@ -144,7 +159,7 @@ export default function DetailedCard({
             {isIngredient ? "Edit Ingredient" : "Edit Kitchenware"}
           </h2>
 
-          <div className="space-y-5">
+          <div className="space-y-3">
             {/* Name Input */}
             <div className="space-y-1">
               <label
@@ -198,7 +213,7 @@ export default function DetailedCard({
                 htmlFor="quantity"
                 className="block text-xl font-medium text-gray-700"
               >
-                Quantity
+                Quantity <span className="text-red-500">*</span>
               </label>
 
               <input
@@ -208,8 +223,13 @@ export default function DetailedCard({
                 value={formData.quantity}
                 onChange={handleChange}
                 placeholder="e.g., 2 lbs or 1"
-                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                className={`mt-1 block w-full rounded-md border ${
+                  quantityError ? "border-red-500" : "border-gray-300"
+                } shadow-sm focus:border-green-500 focus:ring-green-500`}
               />
+              {quantityError && (
+                <p className="text-red-500 text-xs">{quantityError}</p>
+              )}
             </div>
 
             {/* Expiration Date (Ingredients Only) */}
