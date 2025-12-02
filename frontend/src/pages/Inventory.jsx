@@ -12,6 +12,7 @@ const mapBackendToFrontend = (item) => ({
   name: item.name,
   quantity: item.quantity,
   expiration_date: item.expirationDate ? item.expirationDate.split("T")[0] : "",
+  category: item.category || "Other",
   picture: item.imageUrl,
 });
 
@@ -109,7 +110,7 @@ export default function Inventory() {
     };
     if (modalType === "ingredient") {
       payload.expirationDate = updatedItem.expiration_date;
-      payload.category = "General";
+      payload.category = updatedItem.category;
     }
 
     // C. Determine Endpoint
@@ -172,7 +173,13 @@ export default function Inventory() {
     // This tells the handleSave function later that this is a NEW item.
     const newItem =
       type === "ingredient"
-        ? { name: "", quantity: "", expiration_date: "", picture: "" }
+        ? {
+            name: "",
+            quantity: "",
+            expiration_date: "",
+            picture: "",
+            category: "Other",
+          }
         : { name: "", quantity: "1", picture: "" };
 
     setSelectedItem(newItem);

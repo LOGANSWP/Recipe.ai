@@ -25,7 +25,7 @@ const IngredientSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    default: 'General'
+    default: 'Other'
   }
 }, { timestamps: true });
 
