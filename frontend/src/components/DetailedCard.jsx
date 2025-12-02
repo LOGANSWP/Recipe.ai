@@ -2,19 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { FiUpload } from "react-icons/fi";
-
-// --- Constants ---
-const INGREDIENT_CATEGORIES = [
-  "Meat",
-  "Vegetable",
-  "Fruit",
-  "Seasoning",
-  "Dairy",
-  "Grain",
-  "Bakery",
-  "Canned Goods",
-  "Other",
-];
+import { INGREDIENT_CATEGORIES } from "../assets/config.js";
 
 // --- Detailed Card Component ---
 export default function DetailedCard({

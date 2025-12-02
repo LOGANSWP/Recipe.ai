@@ -5,6 +5,7 @@ import { LuScanText } from "react-icons/lu";
 import InventoryItemCard from "../components/InventoryItemCard";
 import DetailedCard from "../components/DetailedCard";
 import { getDaysUntilExpiry } from "../components/InventoryItemCard";
+import { INGREDIENT_CATEGORIES } from "../assets/config.js";
 
 // --- Helper: Map Backend Data to Frontend Format ---
 const mapBackendToFrontend = (item) => ({
@@ -22,6 +23,7 @@ export default function Inventory() {
   const [kitchenware, setKitchenware] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
   const [selectedItem, setSelectedItem] = useState(null);
@@ -59,15 +61,20 @@ export default function Inventory() {
   // Memoize sorted & filtered ingredients
   const filteredIngredients = useMemo(() => {
     return ingredients
-      .filter((item) =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      .filter((item) => {
+        const matchesSearch = item.name
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const matchesCategory =
+          selectedCategory === "All" || item.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+      })
       .sort((a, b) => {
         const daysA = getDaysUntilExpiry(a.expiration_date);
         const daysB = getDaysUntilExpiry(b.expiration_date);
         return daysA - daysB; // Sort by soonest-to-expire first
       });
-  }, [ingredients, searchTerm]);
+  }, [ingredients, searchTerm, selectedCategory]);
 
   // --- Event Handlers ---
   const handleCardClick = (item, type) => {
@@ -222,10 +229,39 @@ export default function Inventory() {
               {/* --- Ingredients Section --- */}
               <section className="mb-10">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
-                  {/* Left: Section title */}
-                  <h2 className="text-2xl font-semibold text-green-700">
-                    Ingredients
-                  </h2>
+                  {/* Left Side: Title & Filter Buttons */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 overflow-x-auto pb-2 sm:pb-0">
+                    <h2 className="text-2xl font-semibold text-green-700 whitespace-nowrap">
+                      Ingredients
+                    </h2>
+
+                    {/* Category Filter Buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedCategory("All")}
+                        className={`px-3 py-1 text-sm rounded-full transition-colors whitespace-nowrap border ${
+                          selectedCategory === "All"
+                            ? "bg-green-600 text-white border-green-600"
+                            : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        All
+                      </button>
+                      {INGREDIENT_CATEGORIES.map((cat) => (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat)}
+                          className={`px-3 py-1 text-sm rounded-full transition-colors whitespace-nowrap border ${
+                            selectedCategory === cat
+                              ? "bg-green-600 text-white border-green-600"
+                              : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   {/* Right: Buttons grouped */}
                   <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
