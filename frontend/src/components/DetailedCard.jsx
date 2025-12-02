@@ -3,6 +3,19 @@ import { MdClose } from "react-icons/md";
 import { FaRegTrashCan } from "react-icons/fa6";
 import { FiUpload } from "react-icons/fi";
 
+// --- Constants ---
+const INGREDIENT_CATEGORIES = [
+  "Meat",
+  "Vegetable",
+  "Fruit",
+  "Seasoning",
+  "Dairy",
+  "Grain",
+  "Bakery",
+  "Canned Goods",
+  "Other",
+];
+
 // --- Detailed Card Component ---
 export default function DetailedCard({
   item,
@@ -131,99 +144,127 @@ export default function DetailedCard({
             {isIngredient ? "Edit Ingredient" : "Edit Kitchenware"}
           </h2>
 
-          <div className="space-y-3">
-            <div>
+          <div className="space-y-5">
+            {/* Name Input */}
+            <div className="space-y-1">
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-xl font-medium text-gray-700"
               >
                 Name <span className="text-red-500">*</span>
               </label>
+
               <input
                 type="text"
                 name="name"
                 id="name"
                 value={formData.name}
                 onChange={handleChange}
+                placeholder="e.g., Chicken Breast"
                 className={`mt-1 block w-full rounded-md border ${
                   nameError ? "border-red-500" : "border-gray-300"
                 } shadow-sm focus:border-green-500 focus:ring-green-500`}
-                placeholder="e.g., Chicken Breast"
               />
-              {nameError && (
-                <p className="text-red-500 text-xs mt-1">{nameError}</p>
-              )}
+
+              {nameError && <p className="text-red-500 text-xs">{nameError}</p>}
             </div>
 
-            <div>
+            {/* Category Select (Only for Ingredients) */}
+            {isIngredient && (
+              <div className="space-y-1">
+                <label className="block text-xl font-medium text-gray-700">
+                  Category
+                </label>
+
+                <select
+                  name="category"
+                  id="category"
+                  value={formData.category || "Other"}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                >
+                  {INGREDIENT_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Quantity */}
+            <div className="space-y-1">
               <label
                 htmlFor="quantity"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-xl font-medium text-gray-700"
               >
                 Quantity
               </label>
+
               <input
                 type="text"
                 name="quantity"
                 id="quantity"
                 value={formData.quantity}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 placeholder="e.g., 2 lbs or 1"
+                className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
               />
             </div>
 
+            {/* Expiration Date (Ingredients Only) */}
             {isIngredient && (
-              <div>
+              <div className="space-y-1">
                 <label
                   htmlFor="expiration_date"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-xl font-medium text-gray-700"
                 >
                   Expiration Date
                 </label>
+
                 <input
                   type="date"
                   name="expiration_date"
                   id="expiration_date"
                   value={formData.expiration_date}
                   onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                  className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                 />
               </div>
             )}
 
             {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="space-y-1">
+              <label className="block text-xl font-medium text-gray-700">
                 Image
               </label>
+
               <label
                 htmlFor="picture-upload"
-                className="mt-1 cursor-pointer flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm
-                           text-sm font-medium text-gray-700 bg-white hover:bg-gray-50
-                           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                className="cursor-pointer flex items-center justify-center gap-2 px-4 py-2 mt-1 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
               >
                 <FiUpload className="h-5 w-5 text-gray-500" />
                 <span>Upload Image (Max 2MB)</span>
               </label>
+
               <input
                 id="picture-upload"
-                name="picture-upload"
                 type="file"
+                name="picture-upload"
                 className="sr-only"
                 accept="image/png, image/jpeg, image/webp"
                 onChange={handleImageChange}
               />
 
               {uploadError && (
-                <p className="text-red-500 text-xs mt-1">{uploadError}</p>
+                <p className="text-red-500 text-xs">{uploadError}</p>
               )}
 
               {formData.picture && (
                 <button
                   type="button"
                   onClick={handleRemoveImage}
-                  className="mt-2 text-xs text-red-600 hover:underline"
+                  className="text-xs text-red-600 hover:underline mt-1"
                 >
                   Remove Image
                 </button>
