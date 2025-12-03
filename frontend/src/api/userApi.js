@@ -1,9 +1,9 @@
 import api from "./index";
 
-const getUser = (userId) => {
-  return api.get(`/user/user?id=${userId}`);
+const getMyUser = () => {
+  return api.get(`/user/my/user`);
 };
 
 export {
-  getUser,
+  getMyUser,
 };

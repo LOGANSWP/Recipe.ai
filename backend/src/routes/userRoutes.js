@@ -1,12 +1,12 @@
 import express from "express";
 
 import {
-  getUser,
+  getMyUser,
 } from '../controllers/userController.js';
 import requireAuth from '../middleware/requireAuth.js';
 
 const userRouter = express.Router();
 
-userRouter.get('/user', requireAuth(), getUser);
+userRouter.get('/my/user', requireAuth(), getMyUser);
 
 export default userRouter;

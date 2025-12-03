@@ -1,6 +1,7 @@
 import axios from "axios";
+import { message } from "antd";
 
-import { auth } from "../auth//firebaseAuth";
+import auth from "../auth/firebase";
 import { BASE_URL } from "../config";
 
 const api = axios.create({
@@ -17,31 +18,33 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    message.error("Send request fail");
+    return Promise.reject(error);
+  }
 );
 
 api.interceptors.response.use(
   (res) => res.data,
   (error) => {
-    if (error.response) {
-      const { status } = error.response;
+    if (!error.response) {
+      message.error("Network error");
+      return Promise.reject(error);
+    }
 
-      if (status === 401) {
-        console.error("Invalid token");
+    const { status, data } = error.response;
 
-        // TODO: sign out and redirect
-        // auth.signOut();
-        // window.location.href = "/login";
-      }
-      if (status === 403) {
-        console.error("No permission");
-      }
+    if (status === 401) {
+      message.error("Invalid token");
 
-      if (status >= 500) {
-        console.error("Internal server error");
-      }
+      auth.signOut();
+      window.location.href = "/login";
+    } else if (status === 403) {
+      message.error("No permission");
+    } else if (status === 500) {
+      message.error("Internal server error");
     } else {
-      console.error("Network error");
+      message.error(data?.message || "Request fail");
     }
 
     return Promise.reject(error);

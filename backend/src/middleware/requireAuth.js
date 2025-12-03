@@ -1,4 +1,4 @@
-import admin from "../auth/firebaseAuth.js";
+import admin from "../auth/firebase.js";
 import { getUserCache, setUserCache } from "../auth/userCache.js";
 import User from "../models/user.js";
 
@@ -12,18 +12,18 @@ const requireAuth = (roles = []) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const token = header.split(" ")[1];
+    const token = authHeader.split(" ")[1];
 
     try {
-      const { userId } = await admin.auth().verifyIdToken(token);
+      const { uid } = await admin.auth().verifyIdToken(token);
 
-      let user = getUserCache(userId);
+      let user = await getUserCache(uid);
       if (!user) {
-        user = await User.findOne({ _id: userId, isDeleted: false });
+        user = await User.findOne({ firebaseId: uid });
         if (!user) {
           return res.status(404).json({ message: "User not found" });
         }
-        setUserCache(userId, user);
+        setUserCache(uid, user);
       }
       req.user = user;
 
