@@ -2,7 +2,7 @@
 
 ## API Development Guide
 
-This guide provides a concise guide for developers working on the Recipe.ai project, including startup process, API development workflow, and project structure.
+This guide provides a concise reference for developers working on the Recipe.ai project, including startup process, API development workflow, and project structure.
 
 ---
 
@@ -23,7 +23,7 @@ npm install
 1. Download the shared:
    - `.env` file
    - Firebase service account JSON key `cs409-final-project-recipe-ai-firebase-adminsdk-fbsvc-a5105e1fc5.json`
-   - [Google drive](https://drive.google.com/drive/folders/15BsQMzk3y3PEvR-N2KwI08PIVz65wgPA?usp=drive_link)
+   - [Google drive link](https://drive.google.com/drive/folders/15BsQMzk3y3PEvR-N2KwI08PIVz65wgPA?usp=drive_link)
 
 2. Place them in the following locations:
 
@@ -65,7 +65,7 @@ Example purpose: Fetch the current logged-in user's profile.
 
 - Add a new schema file in:
   - `src/models`
-- Learn how to create schemas & apply CRUDs using [Mongoose](https://mongoose.nodejs.cn/docs/models.html)
+- Learn how to create schemas & apply CRUDs using [Mongoose document](https://mongoose.nodejs.cn/docs/models.html)
 
 ---
 
@@ -88,7 +88,7 @@ Example purpose: Fetch the current logged-in user's profile.
 
 - Add validation rules in:
   - `src/celebrate`
-- Learn how to validate requests using [Joi](https://joi.dev/api/?v=17.13.3).
+- Learn how to validate requests using [Joi document](https://joi.dev/api/?v=17.13.3).
 - Add celebrate middleware in your route:
   - e.g. `authRouter.post("/login", postLoginCelebrate, postLogin);`
 
@@ -98,7 +98,7 @@ Example purpose: Fetch the current logged-in user's profile.
 
 ***Important: You do not need to use `try ... catch ...` in controller function, since global error handler has been injected***
 
-***Important: For routers that use `requireAuth(...)` middleware, you can access current User directly from request: `const { user } = req;`***
+***Important: For routers that use `requireAuth(...)` middleware, you can directly access current User from the request object (instead of database): `const { user } = req;`***
 
 ***Important: For controllers that modify User objects, make sure to update User cache using `setUserCache(...)`***
 
@@ -126,7 +126,7 @@ Example purpose: Fetch the current logged-in user's profile.
 
 ### Step 6: Frontend Usage
 
-***Important: For front pages that requires login, make sure to wrap your components with ProtectedRoute, e.g. `<ProtectedRoute><Inventory /></ProtectedRoute>`, then only authenticated users can access your pages***
+***Important: For front pages that requires login, make sure to wrap your components with ProtectedRoute, e.g. `<ProtectedRoute><Inventory /></ProtectedRoute>`, then only authenticated users can access them***
 
 - Call the API in any page or component, such as:
   - `Profile.jsx`
@@ -136,16 +136,7 @@ Example purpose: Fetch the current logged-in user's profile.
 
 ---
 
-## Summary
-
-- The project follows a strict **frontend-backend separation**.
-- Firebase handles authentication, MongoDB stores user data.
-- Axios handles all frontend API requests with unified interceptors.
-- AuthContext + ProtectedRoute enable **global login state tracking and permission control**.
-- New APIs follow a pipeline:
-  **Route → Validation → Controller → Middleware → Frontend API → Page Usage**
-
-## 1. Project Structure Overview
+## 3. Project Structure Overview
 
 ### Backend (`Recipe.ai/backend`)
 
@@ -247,3 +238,12 @@ Example purpose: Fetch the current logged-in user's profile.
   Vite build and dev server configuration.
 
 ---
+
+## Summary
+
+- The project follows a strict **frontend-backend separation**.
+- Firebase handles authentication, MongoDB stores user data.
+- Axios handles all frontend API requests with unified interceptors.
+- AuthContext + ProtectedRoute enable **global login state tracking and permission control**.
+- New APIs follow a pipeline:
+  **Route → Validation → Controller → Middleware → Frontend API → Page Usage**
