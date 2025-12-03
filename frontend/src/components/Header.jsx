@@ -1,7 +1,24 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IoFastFoodOutline } from "react-icons/io5";
+import { message } from "antd";
+
+import { useAuth } from "../auth/AuthContent";
+import { logout } from "../api/authApi";
 
 export default function Header() {
+  const navigate = useNavigate();
+  const { firebaseUser } = useAuth();
+
+  const handleLogoutOnClick = async () => {
+    try {
+      await logout();
+      message.success("Logout success");
+      navigate("/");
+    } catch (err) {
+      console.log(err);
+    };
+  };
+
   // Helper function for consistent link styles
   const linkStyles =
     "text-gray-700 font-medium hover:text-green-600 transition-colors duration-200 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2";
@@ -44,6 +61,39 @@ export default function Header() {
               Profile
             </li>
           </Link>
+
+          {firebaseUser === null && (
+            <Link to="/login">
+              <li
+                className="font-medium px-4 py-2 rounded-full 
+                         hover:bg-green-300 transition-colors duration-200 
+                         focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+              >
+                Login
+              </li>
+            </Link>
+          )}
+          {firebaseUser === null && (
+            <Link to="/register">
+              <li
+                className="font-medium px-4 py-2 rounded-full 
+                         hover:bg-green-300 transition-colors duration-200 
+                         focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+              >
+                Register
+              </li>
+            </Link>
+          )}
+          {firebaseUser !== null && (
+            <li
+              className="font-medium px-4 py-2 rounded-full 
+                         hover:bg-green-300 transition-colors duration-200 
+                         focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+              onClick={handleLogoutOnClick}
+            >
+              Logout
+            </li>
+          )}
         </ul>
       </div>
     </header>
