@@ -4,6 +4,8 @@ import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
 import cors from "cors";
 import inventoryRouter from "../src/routes/inventoryRoutes.js"
+import authRouter from "./routes/authRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 
 dotenv.config()
 
@@ -31,6 +33,8 @@ app.use(cookieParser())
 
 // Routes
 app.use('/api/inventory', inventoryRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
 
 app.listen(3000, () => {
     console.log("App is running on port 3000!!!")
