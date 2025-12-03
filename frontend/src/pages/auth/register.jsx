@@ -5,6 +5,7 @@ import {
   Form,
   Input,
   Button,
+  Space,
   message,
 } from "antd";
 
@@ -98,8 +99,10 @@ const Register = () => {
           </Form.Item>
 
           <div className="text-center">
-            Already have an account?
-            <Link to="/login">Login</Link>
+            <Space>
+              Already have an account?
+              <Link to="/login">Login</Link>
+            </Space>
           </div>
         </Form>
       </Card>

@@ -5,6 +5,7 @@ import {
   Form,
   Input,
   Button,
+  Space,
   message,
 } from "antd";
 
@@ -20,7 +21,7 @@ const Login = () => {
       setLoading(true);
       await login(email, password);
       message.success("Login success");
-      navigate("/test");
+      navigate("/");
     } catch (err) {
       console.error(err);
     } finally {
@@ -66,8 +67,10 @@ const Login = () => {
           </Form.Item>
 
           <div className="text-center">
-            Don't have an account yet?
-            <Link to="/register">Login</Link>
+            <Space>
+              Don't have an account yet?
+              <Link to="/register">Login</Link>
+            </Space>
           </div>
         </Form>
       </Card>

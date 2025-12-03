@@ -7,7 +7,6 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
   const [firebaseUser, setFirebaseUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -16,14 +15,13 @@ const AuthProvider = ({ children }) => {
       } else {
         setFirebaseUser(null);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ firebaseUser, loading }}>
+    <AuthContext.Provider value={{ firebaseUser }}>
       {children}
     </AuthContext.Provider>
   );
