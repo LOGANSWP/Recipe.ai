@@ -1,4 +1,4 @@
-import { USER_CACHE_TTL } from "../config";
+import { USER_CACHE_TTL } from "../config.js";
 
 const userCache = new Map();
 

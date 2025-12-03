@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
   postRegister,
   postLogin,
@@ -9,10 +10,8 @@ import {
 
 } from "../celebrate/authPattern.js";
 import requireAuth from "../middleware/requireAuth.js";
-import errorHandler from "../middleware/errorHandler.js";
 
 const authRouter = express.Router();
-authRouter.use(errorHandler);
 
 authRouter.post("/register", postRegisterCelebrate, postRegister);
 authRouter.post("/login", postLogin);

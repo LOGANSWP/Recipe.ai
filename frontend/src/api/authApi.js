@@ -5,7 +5,7 @@ import {
 } from "firebase/auth";
 
 import api from "./index";
-import auth from "../auth/firebase";
+import auth from "../auth/firebaseAuth";
 
 const register = async (name, email, password) => {
   try {
@@ -16,7 +16,7 @@ const register = async (name, email, password) => {
       name,
       email,
     };
-    await api.post(`/api/auth/register`, registerData);
+    await api.post(`/auth/register`, registerData);
   } catch (err) {
     console.error(err);
   }
@@ -27,7 +27,7 @@ const login = async (email, password) => {
     const firebaseUser = await signInWithEmailAndPassword(auth, email, password);
 
     const loginData = { id: firebaseUser.user.uid };
-    await api.post(`/api/auth/login`, loginData);
+    await api.post(`/auth/login`, loginData);
   } catch (err) {
     console.error(err);
   }
@@ -37,7 +37,7 @@ const logout = async () => {
   try {
     signOut(auth);
 
-    await api.post(`/api/auth/logout`);
+    await api.post(`/auth/logout`);
   } catch (err) {
     console.error(err);
   }

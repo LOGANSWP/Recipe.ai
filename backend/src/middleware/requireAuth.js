@@ -1,14 +1,12 @@
-import admin from "../auth/firebase";
-import User from "../models/user";
-import { getUserCache, setUserCache } from "../auth/userCache";
+import admin from "../auth/firebaseAuth.js";
+import { getUserCache, setUserCache } from "../auth/userCache.js";
+import User from "../models/user.js";
 
-/*
-If the `roles` parameter is not specified, all user types are allowed access by default.
-Otherwise, the user must be of the specified types.
-The `roles` parameter can be selected from the `userType` enumeration value in the `User` table.
-*/
-const requireAuth = async (roles = []) => {
-  const chechAuth = async (req, res, next) => {
+// If the `roles` parameter is not specified, all user types are allowed access by default.
+// Otherwise, the user must be of the specified types.
+// The `roles` parameter can be selected from the `userType` enumeration value in the `User` table.
+const requireAuth = (roles = []) => {
+  return async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -38,8 +36,6 @@ const requireAuth = async (roles = []) => {
       return res.status(403).json({ message: "Invalid token" });
     }
   };
-
-  return chechAuth;
 };
 
 export default requireAuth;
