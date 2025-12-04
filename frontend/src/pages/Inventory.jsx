@@ -6,6 +6,12 @@ import InventoryItemCard from "../components/InventoryItemCard";
 import DetailedCard from "../components/DetailedCard";
 import { getDaysUntilExpiry } from "../components/InventoryItemCard";
 import { INGREDIENT_CATEGORIES } from "../assets/config.js";
+import {
+  fetchAllIngredients,
+  fetchAllKitchenware,
+  addOrUpdateInventory,
+  deleteInventory,
+} from "../api/userApi.js";
 
 // --- Helper: Map Backend Data to Frontend Format ---
 const mapBackendToFrontend = (item) => ({
@@ -33,25 +39,14 @@ export default function Inventory() {
   // Fetch Data from API
   const fetchData = async () => {
     setIsLoading(true);
-    try {
-      const ingRes = await fetch(
-        `${import.meta.env.VITE_API_URL}inventory/ingredients`
-      );
-      const ingData = await ingRes.json();
-      if (Array.isArray(ingData))
-        setIngredients(ingData.map(mapBackendToFrontend));
+    const ingData = await fetchAllIngredients();
+    if (Array.isArray(ingData))
+      setIngredients(ingData.map(mapBackendToFrontend));
 
-      const kitRes = await fetch(
-        `${import.meta.env.VITE_API_URL}inventory/kitchenware`
-      );
-      const kitData = await kitRes.json();
-      if (Array.isArray(kitData))
-        setKitchenware(kitData.map(mapBackendToFrontend));
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    const kitData = await fetchAllKitchenware();
+    if (Array.isArray(kitData))
+      setKitchenware(kitData.map(mapBackendToFrontend));
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -129,28 +124,12 @@ export default function Inventory() {
       modalType === "ingredient" ? "/ingredients" : "/kitchenware";
     const method = isNewItem ? "POST" : "PUT";
     const url = isNewItem
-      ? `${import.meta.env.VITE_API_URL}inventory${endpoint}`
-      : `${import.meta.env.VITE_API_URL}inventory${endpoint}/${updatedItem.id}`;
+      ? `/inventory${endpoint}`
+      : `/inventory${endpoint}/${updatedItem.id}`;
 
     // D. Call API
-    try {
-      const res = await fetch(url, {
-        method: method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        // E. Sync with Database
-        // Instead of manually updating the state with a fake ID, we reload the data.
-        // This ensures our UI is 100% consistent with the Database.
-        await fetchData();
-      } else {
-        console.error("Failed to save item");
-      }
-    } catch (error) {
-      console.error("Error saving item:", error);
-    }
+    const res = await addOrUpdateInventory(method, url, payload);
+    await fetchData();
   };
 
   // API Delete Action
@@ -159,18 +138,13 @@ export default function Inventory() {
     if (!id) return;
 
     const endpoint = type === "ingredient" ? "/ingredients" : "/kitchenware";
-    try {
-      await fetch(`${import.meta.env.VITE_API_URL}inventory${endpoint}/${id}`, {
-        method: "DELETE",
-      });
-      // Optimistic update for deletion is fine because we know the ID existed
-      if (type === "ingredient") {
-        setIngredients((prev) => prev.filter((item) => item.id !== id));
-      } else {
-        setKitchenware((prev) => prev.filter((item) => item.id !== id));
-      }
-    } catch (error) {
-      console.error("Error deleting item:", error);
+    const url = `/inventory${endpoint}/${id}`;
+    await deleteInventory(url);
+    // Optimistic update for deletion is fine because we know the ID existed
+    if (type === "ingredient") {
+      setIngredients((prev) => prev.filter((item) => item.id !== id));
+    } else {
+      setKitchenware((prev) => prev.filter((item) => item.id !== id));
     }
   };
 
