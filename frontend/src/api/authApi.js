@@ -22,7 +22,27 @@ const register = async (name, email, password) => {
     name,
     email,
   };
-  await api.post(`/auth/register`, registerData);
+  
+  try {
+    // IMPORTANT: Sign out IMMEDIATELY to prevent AuthContext from fetching non-existent user
+    // This prevents the race condition where Firebase auth state changes before backend creates user
+    await signOut(auth);
+    
+    // Now register user in backend (after sign out)
+    await api.post(`/auth/register`, registerData);
+    
+    // Wait a bit for the sign out to propagate through Firebase
+    // This ensures the auth state is fully cleared
+    await new Promise(resolve => setTimeout(resolve, 300));
+  } catch (err) {
+    // If registration fails, ensure user is signed out
+    try {
+      await signOut(auth);
+    } catch (signOutErr) {
+      console.error("Failed to sign out after error:", signOutErr);
+    }
+    throw err;
+  }
 };
 
 const login = async (email, password) => {

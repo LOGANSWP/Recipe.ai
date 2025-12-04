@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -12,5 +12,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
+// Set Firebase persistence to LOCAL (survives page refresh and browser close)
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error("Failed to set Firebase persistence:", error);
+});
 
 export default auth;

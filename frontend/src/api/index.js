@@ -32,19 +32,40 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const { status, data } = error.response;
+    const { status, data, config } = error.response;
+
+    // Don't show error messages for certain expected errors
+    // e.g., fetching user data during registration flow
+    const isSilentEndpoint = config.url?.includes('/user/my/user');
+    const shouldShowError = !isSilentEndpoint || status !== 404;
 
     if (status === 401) {
-      message.error("Invalid token");
-
-      auth.signOut();
-      window.location.href = "/login";
+      if (shouldShowError) {
+        message.error("Invalid token");
+      }
+      // Only sign out and redirect if user is currently authenticated
+      // This prevents issues during page refresh when token is being loaded
+      if (auth.currentUser) {
+        auth.signOut();
+        window.location.href = "/login";
+      }
     } else if (status === 403) {
-      message.error("No permission");
+      if (shouldShowError) {
+        message.error("No permission");
+      }
+    } else if (status === 404) {
+      // For user endpoints, 404 might be expected (e.g., during registration)
+      if (shouldShowError) {
+        message.error(data?.message || "Not found");
+      }
     } else if (status === 500) {
-      message.error("Internal server error");
+      if (shouldShowError) {
+        message.error("Internal server error");
+      }
     } else {
-      message.error(data?.message || "Request fail");
+      if (shouldShowError) {
+        message.error(data?.message || "Request fail");
+      }
     }
 
     return Promise.reject(error);

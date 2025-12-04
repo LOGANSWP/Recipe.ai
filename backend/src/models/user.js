@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     userType: { type: String, enum: ["admin", "user"], default: "user" },
     avatar: { type: String, default: null },
+    timezone: { type: String, default: "UTC-5 (Eastern Time)" },
   },
   { timestamps: true },
 );

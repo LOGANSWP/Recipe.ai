@@ -20,7 +20,12 @@ const getUserCache = async (userId) => {
   return cachedUser.user;
 };
 
+const clearUserCache = (userId) => {
+  userCache.delete(userId);
+};
+
 export {
   setUserCache,
   getUserCache,
+  clearUserCache,
 };
