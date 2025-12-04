@@ -14,7 +14,7 @@ import requireAuth from '../middleware/requireAuth.js'
 const router = express.Router();
 
 // Apply auth middleware to all routes
-router.use(requireAuth);
+router.use(requireAuth());
 
 // Ingredient Routes
 router.get('/ingredients', getIngredients);
