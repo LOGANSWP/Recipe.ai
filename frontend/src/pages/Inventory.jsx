@@ -39,19 +39,14 @@ export default function Inventory() {
   // Fetch Data from API
   const fetchData = async () => {
     setIsLoading(true);
-    try {
-      const ingData = await fetchAllIngredients();
-      if (Array.isArray(ingData))
-        setIngredients(ingData.map(mapBackendToFrontend));
+    const ingData = await fetchAllIngredients();
+    if (Array.isArray(ingData))
+      setIngredients(ingData.map(mapBackendToFrontend));
 
-      const kitData = await fetchAllKitchenware();
-      if (Array.isArray(kitData))
-        setKitchenware(kitData.map(mapBackendToFrontend));
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    const kitData = await fetchAllKitchenware();
+    if (Array.isArray(kitData))
+      setKitchenware(kitData.map(mapBackendToFrontend));
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -133,13 +128,8 @@ export default function Inventory() {
       : `/inventory${endpoint}/${updatedItem.id}`;
 
     // D. Call API
-    try {
-      const res = await addOrUpdateInventory(method, url, payload);
-
-      await fetchData();
-    } catch (error) {
-      console.error("Error saving item:", error);
-    }
+    const res = await addOrUpdateInventory(method, url, payload);
+    await fetchData();
   };
 
   // API Delete Action
@@ -148,17 +138,13 @@ export default function Inventory() {
     if (!id) return;
 
     const endpoint = type === "ingredient" ? "/ingredients" : "/kitchenware";
-    try {
-      const url = `/inventory${endpoint}/${id}`;
-      await deleteInventory(url);
-      // Optimistic update for deletion is fine because we know the ID existed
-      if (type === "ingredient") {
-        setIngredients((prev) => prev.filter((item) => item.id !== id));
-      } else {
-        setKitchenware((prev) => prev.filter((item) => item.id !== id));
-      }
-    } catch (error) {
-      console.error("Error deleting item:", error);
+    const url = `/inventory${endpoint}/${id}`;
+    await deleteInventory(url);
+    // Optimistic update for deletion is fine because we know the ID existed
+    if (type === "ingredient") {
+      setIngredients((prev) => prev.filter((item) => item.id !== id));
+    } else {
+      setKitchenware((prev) => prev.filter((item) => item.id !== id));
     }
   };
 
