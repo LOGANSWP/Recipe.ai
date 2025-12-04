@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Card,
@@ -10,11 +10,19 @@ import {
 } from "antd";
 
 import { login } from "../../api/authApi";
+import { useAuth } from "../../auth/AuthContent";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
+  const { firebaseUser } = useAuth();
+
+  // If user is already logged in, redirect to home
+  useEffect(() => {
+    if (firebaseUser) {
+      navigate("/", { replace: true });
+    }
+  }, [firebaseUser, navigate]);
 
   const postLogin = async (email, password) => {
     try {

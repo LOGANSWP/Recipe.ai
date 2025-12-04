@@ -1,4 +1,5 @@
 import User from "../models/user.js";
+import { clearUserCache } from "../auth/userCache.js";
 
 const postRegister = async (req, res) => {
   const { id, name, email } = req.body;
@@ -30,6 +31,11 @@ const postLogin = async (req, res) => {
 };
 
 const postLogout = async (req, res) => {
+  // Clear user cache on logout
+  const { user } = req;
+  if (user && user.firebaseId) {
+    clearUserCache(user.firebaseId);
+  }
   return res.status(200).json({ message: "Logout success" });
 };
 

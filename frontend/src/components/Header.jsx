@@ -1,22 +1,45 @@
 import { Link, useNavigate } from "react-router-dom";
 import { IoFastFoodOutline } from "react-icons/io5";
+import { FaUser, FaSignOutAlt, FaChevronDown } from "react-icons/fa";
 import { message } from "antd";
+import { useState, useEffect, useRef } from "react";
 
 import { useAuth } from "../auth/AuthContent";
 import { logout } from "../api/authApi";
+import { getDefaultAvatar } from "../assets/avatars";
 
 export default function Header() {
   const navigate = useNavigate();
-  const { firebaseUser } = useAuth();
+  const { firebaseUser, userData } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogoutOnClick = async () => {
     try {
       await logout();
       message.success("Logout success");
+      setShowDropdown(false);
       navigate("/");
     } catch (err) {
       console.log(err);
     };
+  };
+
+  const handleProfileClick = () => {
+    setShowDropdown(false);
+    navigate("/profile");
   };
 
   // Helper function for consistent link styles
@@ -51,17 +74,60 @@ export default function Header() {
             <li className={`hidden sm:inline ${linkStyles}`}>Planning</li>
           </Link>
 
-          {/* Profile link styled as a button */}
-          <Link to="/profile">
-            <li
-              className="text-white font-medium bg-green-600 px-4 py-2 rounded-full 
-                         hover:bg-green-700 transition-colors duration-200 
-                         focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
-            >
-              Profile
-            </li>
-          </Link>
+          {/* User Avatar Dropdown (when logged in) */}
+          {firebaseUser !== null && userData && (
+            <li className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 rounded-full"
+              >
+                <img
+                  src={userData.avatar || getDefaultAvatar(userData.name)}
+                  alt="User avatar"
+                  className="w-10 h-10 rounded-full border-2 border-green-500 hover:border-green-600 transition-all"
+                />
+                <FaChevronDown 
+                  className={`text-gray-600 text-sm transition-transform hidden sm:block ${
+                    showDropdown ? 'rotate-180' : ''
+                  }`} 
+                />
+              </button>
 
+              {/* Dropdown Menu */}
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                  {/* User Info */}
+                  <div className="px-4 py-3 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {userData.name}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {userData.email}
+                    </p>
+                  </div>
+
+                  {/* Menu Items */}
+                  <button
+                    onClick={handleProfileClick}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-3 transition-colors"
+                  >
+                    <FaUser className="text-green-600" />
+                    <span>Profile Settings</span>
+                  </button>
+
+                  <button
+                    onClick={handleLogoutOnClick}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                  >
+                    <FaSignOutAlt />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
+            </li>
+          )}
+
+          {/* Login/Register buttons (when not logged in) */}
           {firebaseUser === null && (
             <Link to="/login">
               <li
@@ -83,16 +149,6 @@ export default function Header() {
                 Register
               </li>
             </Link>
-          )}
-          {firebaseUser !== null && (
-            <li
-              className="font-medium px-4 py-2 rounded-full 
-                         hover:bg-green-300 transition-colors duration-200 
-                         focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
-              onClick={handleLogoutOnClick}
-            >
-              Logout
-            </li>
           )}
         </ul>
       </div>

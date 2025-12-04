@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Card,
@@ -10,20 +10,30 @@ import {
 } from "antd";
 
 import { register } from "../../api/authApi";
+import { useAuth } from "../../auth/AuthContent";
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
-
   const navigate = useNavigate();
+  const { firebaseUser } = useAuth();
+
+  // If user is already logged in, redirect to home
+  useEffect(() => {
+    if (firebaseUser) {
+      navigate("/", { replace: true });
+    }
+  }, [firebaseUser, navigate]);
 
   const postRegister = async (name, email, password) => {
     try {
       setLoading(true);
       await register(name, email, password);
-      message.success("Register success");
+      message.success("Registration successful! Please log in with your credentials.");
+      // Navigate to login page after successful registration
       navigate("/login");
     } catch (err) {
       console.error(err);
+      message.error("Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
