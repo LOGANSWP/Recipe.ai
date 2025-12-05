@@ -11,7 +11,7 @@ import {
   fetchAllKitchenware,
   addOrUpdateInventory,
   deleteInventory,
-} from "../api/userApi.js";
+} from "../api/inventoryApi.js";
 
 // --- Helper: Map Backend Data to Frontend Format ---
 const mapBackendToFrontend = (item) => ({

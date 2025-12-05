@@ -1,4 +1,4 @@
-import User from "../models/user.js";
+import User from "../models/User.js";
 import { clearUserCache } from "../auth/userCache.js";
 
 const postRegister = async (req, res) => {
