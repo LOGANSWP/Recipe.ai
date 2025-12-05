@@ -3,7 +3,8 @@ import {
   useState,
   useMemo,
 } from "react";
-import { message } from "antd";
+import { Link } from "react-router-dom";
+import { Space, notification, message } from "antd";
 
 import AIRecommendation from "./AIRecommendation";
 import CreatePlanForm from "./CreatePlanForm";
@@ -13,6 +14,8 @@ import { getPlanList, postCreatePlan } from "../../api/planningApi";
 const Planning = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [plans, setPlans] = useState([]);
+
+  const [notificationApi, contextHolder] = notification.useNotification();
 
   useEffect(() => {
     fetchPlanList();
@@ -28,17 +31,44 @@ const Planning = () => {
   const fetchPlanList = async () => {
     try {
       const res = await getPlanList();
-      const { data } = res;
-      setPlans(data);
+      setPlans(res.data);
     } catch (err) {
       console.error(err);
     }
   };
 
+  const openNotification = (type, title, description) => {
+    notificationApi[type]({
+      title,
+      description,
+    });
+  };
+
   const createPlan = async (plan) => {
     try {
-      await postCreatePlan(plan);
-      message.success("Create plan success");
+      const res = await postCreatePlan(plan);
+      if (res.data === null) {
+        message.error("Create plan fail");
+        openNotification(
+          "error",
+          "We can not create a plan now!",
+          <Space vertical>
+            {res.message}
+            <Link to="/inventory">
+              Go to Inventory
+            </Link>
+          </Space>
+        );
+      } else {
+        message.success("Create plan success");
+        openNotification(
+          "success",
+          "We are generating recipes for you!",
+          <Link to="/">
+            Go to Plan Detail
+          </Link>
+        );
+      }
     } catch (err) {
       console.error(err);
     }
@@ -57,6 +87,8 @@ const Planning = () => {
   return (
     <main className="bg-gray-50 min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto flex flex-col gap-10">
+        {contextHolder}
+
         <h1 className="text-4xl font-bold text-gray-800">
           Planning
         </h1>

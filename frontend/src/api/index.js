@@ -47,11 +47,15 @@ api.interceptors.response.use(
       // This prevents issues during page refresh when token is being loaded
       if (auth.currentUser) {
         auth.signOut();
-        window.location.href = "/login";
+        window.location.href = "/unauthorized";
       }
     } else if (status === 403) {
       if (shouldShowError) {
         message.error("No permission");
+      }
+      if (auth.currentUser) {
+        auth.signOut();
+        window.location.href = "/forbidden";
       }
     } else if (status === 404) {
       // For user endpoints, 404 might be expected (e.g., during registration)

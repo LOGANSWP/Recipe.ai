@@ -52,12 +52,12 @@ const PlanList = ({ plans, searchTerm, onSearchChange }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans.map((plan) => (
-          <PlanCard key={plan.id} item={plan} />
+          <PlanCard key={plan._id} item={plan} />
         ))}
       </div>
 
       {plans.length === 0 && (
-        <p className="text-center text-gray-500 py-10">
+        <p className="text-gray-500 py-10">
           No plan found.
         </p>
       )}

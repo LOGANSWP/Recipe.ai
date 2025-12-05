@@ -48,6 +48,12 @@ const PreferredPromptList = ({ onSelect }) => {
             {expanded ? "Collapse" : "Expand all..."}
           </button>
         )}
+
+        {prompts.length === 0 && (
+          <p className="text-center text-gray-500">
+            No prompts found.
+          </p>
+        )}
       </div>
     </div>
   );

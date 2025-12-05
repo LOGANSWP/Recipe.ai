@@ -4,7 +4,7 @@ const PlanSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
       index: true,
     },
@@ -19,12 +19,12 @@ const PlanSchema = new mongoose.Schema(
     },
     prompt: {
       type: String,
-      default: '',
+      default: "",
       maxlength: 500,
     },
     mealType: {
       type: String,
-      enum: ['Breakfast', 'Brunch', 'Lunch', 'High Tea', 'Dinner', 'Night Snack'],
+      enum: ["Breakfast", "Brunch", "Lunch", "High Tea", "Dinner", "Night Snack"],
       required: true,
     },
     peopleNums: {
@@ -39,10 +39,16 @@ const PlanSchema = new mongoose.Schema(
       max: 600,
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["waiting", "success", "fail", "closed"],
+      default: "waiting",
+      required: true,
+    },
   },
   { timestamps: true },
 );
 
-const Plan = mongoose.model('Plan', PlanSchema);
+const Plan = mongoose.model("Plan", PlanSchema);
 
 export default Plan;

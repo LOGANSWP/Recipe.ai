@@ -66,6 +66,12 @@ const AIRecommendation = () => {
           />
         ))}
       </div>
+
+      {recommendations.length === 0 && (
+        <p className="text-center text-gray-500">
+          No recommendations found.
+        </p>
+      )}
     </div>
   );
 };

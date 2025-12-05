@@ -26,6 +26,13 @@ function badRequest(res, message, data) {
   });
 }
 
+function forbidden(res, message, data) {
+  return res.status(403).json({
+    message: message || 'forbidden',
+    data: data || null,
+  });
+}
+
 function notFound(res, message, data) {
   return res.status(404).json({
     message: message || 'Not found',
@@ -45,6 +52,7 @@ export {
   createSuccess,
   deleteSuccess,
   badRequest,
+  forbidden,
   notFound,
   internalError,
 };
