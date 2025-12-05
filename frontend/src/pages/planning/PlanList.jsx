@@ -1,6 +1,13 @@
 import { IoSearchOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 const PlanCard = ({ item }) => {
+  const navigate = useNavigate();
+
+  const handleViewOnClick = (planId) => {
+    navigate(`/planning/plan?id=${planId}`);
+  };
+
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex flex-col h-full
     transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
@@ -23,6 +30,7 @@ const PlanCard = ({ item }) => {
 
       <button
         className="mt-auto self-end bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 text-sm"
+        onClick={() => handleViewOnClick(item._id)}
       >
         View / Edit
       </button>

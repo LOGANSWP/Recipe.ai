@@ -16,8 +16,11 @@ const PreferredPromptList = ({ onSelect }) => {
   const fetchPromptList = async () => {
     try {
       const res = await getPromptList();
-      const { data } = res;
-      setPrompts(data);
+      const promptList = res.data.map(prompt => ({
+        ...prompt,
+        short: prompt.text.length > 30 ? `${prompt.text.slice(0, 27)}...` : prompt.text,
+      }))
+      setPrompts(promptList);
     } catch (err) {
       console.error(err);
     }
@@ -32,11 +35,11 @@ const PreferredPromptList = ({ onSelect }) => {
       <div className="flex flex-wrap gap-2">
         {(expanded ? prompts : prompts.slice(0, 3)).map((prompt) => (
           <button
-            key={prompt.id}
+            key={prompt._id}
             onClick={() => onSelect(prompt.text)}
             className="border px-2 py-1 rounded-lg bg-green-50 hover:bg-green-200 whitespace-nowrap"
           >
-            {prompt.text}
+            {prompt.short}
           </button>
         ))}
 

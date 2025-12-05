@@ -5,7 +5,6 @@ const RecommendationSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      maxlength: 200,
     },
     img: {
       type: String,

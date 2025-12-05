@@ -6,6 +6,7 @@ import Profile from "./pages/Profile";
 import Cook from "./pages/Cook";
 import Inventory from "./pages/Inventory";
 import Planning from "./pages/planning";
+import PlanDisp from "./pages/planning/PlanDisp";
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
 import Page401 from "./pages/error/Page401";
@@ -43,6 +44,11 @@ export default function App() {
           <Route path="/planning" element={
             <ProtectedRoute>
               <Planning />
+            </ProtectedRoute>
+          } />
+          <Route path="/planning/plan" element={
+            <ProtectedRoute>
+              <PlanDisp />
             </ProtectedRoute>
           } />
 

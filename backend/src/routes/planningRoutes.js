@@ -6,6 +6,7 @@ import {
   getRecommendationList,
   getPromptList,
   getPlan,
+  getPlanDetail,
   postRerunPlan,
   postDeletePlan,
 } from "../controllers/planningController.js";
@@ -20,6 +21,7 @@ planningRouter.get("/prompt/list", requireAuth(), getPromptList);
 
 // update plan could be complicated, it's better to delete the old one and then create a new one
 planningRouter.get("/plan", requireAuth(), getPlan);
+planningRouter.get("/plan/detail", requireAuth(), getPlanDetail);
 planningRouter.post("/rerun/plan", requireAuth(), postRerunPlan);
 planningRouter.post("/delete/plan", requireAuth(), postDeletePlan);
 

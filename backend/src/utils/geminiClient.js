@@ -19,6 +19,7 @@ const interactCreatePlan = async (userPrompt) => {
   if (!createPlanModel) {
     throw new Error("invalid model");
   }
+  console.log("Interacting with gemini...");
   const result = await createPlanModel.generateContent(userPrompt);
   return result.response.text();
 };

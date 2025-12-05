@@ -12,7 +12,6 @@ const PreferredPromptSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      maxlength: 200,
     },
     frequency: {
       type: Number,

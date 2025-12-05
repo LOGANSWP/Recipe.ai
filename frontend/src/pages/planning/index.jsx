@@ -3,8 +3,8 @@ import {
   useState,
   useMemo,
 } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Space, notification, message } from "antd";
+import { Link } from "react-router-dom";
+import { Space, notification } from "antd";
 
 import AIRecommendation from "./AIRecommendation";
 import CreatePlanForm from "./CreatePlanForm";
@@ -13,9 +13,7 @@ import { getPlanList, postCreatePlan } from "../../api/planningApi";
 
 const Planning = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [plans, setPlans] = useState(mockPlans);
-
-  const navigate = useNavigate();
+  const [plans, setPlans] = useState([]);
 
   const [notificationApi, contextHolder] = notification.useNotification();
 
@@ -50,7 +48,6 @@ const Planning = () => {
     try {
       const res = await postCreatePlan(plan);
       if (res.data === null) {
-        message.error("Create plan fail");
         openNotification(
           "error",
           "We can not create a plan now!",
@@ -62,11 +59,10 @@ const Planning = () => {
           </Space>
         );
       } else {
-        message.success("Create plan success");
         openNotification(
           "success",
           "We are generating recipes for you!",
-          <Link to="/">
+          <Link to={`/planning/plan?id=${res.data._id}`}>
             Go to Plan Detail
           </Link>
         );
@@ -81,15 +77,19 @@ const Planning = () => {
     const newPlan = {
       ...payload,
       title: payload.prompt || "AI Generated Plan",
-      tags: [payload.meal_type, `${payload.people_nums} people`],
+      tags: [payload.mealType, `${payload.peopleNums} people`],
     };
 
     createPlan(newPlan);
   };
 
   return (
-    <main className="bg-gray-50 min-h-screen p-4 md:p-8">
-      <div className="max-w-7xl mx-auto flex flex-col gap-10">
+    <main className="relative bg-gray-50  min-h-[calc(100vh-80px)] p-4 md:p-8 overflow-hidden">
+      <div className="absolute -top-20 -left-20 w-72 h-72 bg-yellow-200 rounded-full opacity-50 blur-3xl -z-0" />
+      <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-200 rounded-full opacity-50 blur-3xl -z-0" />
+      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
+
+      <div className="sticky max-w-7xl mx-auto flex flex-col gap-10 top-0 z-30">
         {contextHolder}
 
         <h1 className="text-4xl font-bold text-gray-800">

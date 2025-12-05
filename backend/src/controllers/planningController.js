@@ -8,7 +8,7 @@ import Recommendation from "../models/Recommendation.js";
 import Prompt from "../models/Prompt.js";
 import Recipe from "../models/Recipe.js"
 
-import { success, createSuccess, deleteSuccess, forbidden, badRequest } from "../utils/responseTemplete.js";
+import { success, createSuccess, deleteSuccess, forbidden, badRequest, internalError } from "../utils/responseTemplete.js";
 import { interactCreatePlan } from "../utils/geminiClient.js";
 import { GEMINI_RETRY_NUM, CREATE_PLAN_USER_PROMPT_TEMPLATE } from "../config.js";
 
@@ -36,21 +36,54 @@ const postCreatePlan = async (req, res) => {
     return success(res, "It appears there are no available kitchenware. Please go to the inventory page to add some.", false);
   }
 
-  const createdPlan = await Plan.create({
-    userId: user.id,
-    title,
-    tags,
-    prompt,
-    mealType,
-    peopleNums,
-    timeLimitMinutes,
-    ready: false,
-  });
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
 
-  // asynchronously call LLM to generate recipes (might be slow)
-  createRecipesByLLM(user, createdPlan, availableIngredients, availableKitchenwares);
+    const createdPlan = await Plan.create({
+      userId: user._id,
+      title,
+      tags,
+      prompt,
+      mealType,
+      peopleNums,
+      timeLimitMinutes,
+    });
 
-  return createSuccess(res, "create plan success", createdPlan);
+    if (prompt) {
+      const existingPrompt = await Prompt.findOne({ userId: user._id, text: prompt });
+      if (existingPrompt) {
+        await Prompt.findByIdAndUpdate(
+          existingPrompt._id,
+          { frequency: existingPrompt.frequency + 1 },
+          { new: true, runValidators: true, session },
+        );
+      } else {
+        const newPrompt = {
+          userId: user._id,
+          text: prompt,
+        };
+        await Prompt.create([newPrompt], { session });
+      }
+    }
+
+    // asynchronously call LLM to generate recipes (might be slow)
+    createRecipesByLLM(user, createdPlan, availableIngredients, availableKitchenwares);
+
+    await session.commitTransaction();
+    return createSuccess(res, "create plan success", createdPlan);
+  } catch (err) {
+    console.error(err);
+    if (session) {
+      await session.abortTransaction();
+    }
+    return internalError(res);
+  } finally {
+    if (session) {
+      session.endSession();
+    }
+  }
 };
 
 const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
@@ -60,8 +93,11 @@ const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
   for (let _ = 0; _ < GEMINI_RETRY_NUM; _++) {
     try {
       const recipesJson = await interactCreatePlan(userPrompt);
-      console.log("recipesJson", recipesJson);
+      // console.log("recipesJson", recipesJson);
       recipes = JSON.parse(recipesJson.replaceAll("```json", "").replaceAll("```", ""));
+      if (recipes !== null && Array.isArray(recipes)) {
+        break;
+      }
     } catch (err) {
       console.error(err);
     }
@@ -75,6 +111,13 @@ const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
     );
     return;
   }
+
+  // console.log("get recipes success");
+  recipes = recipes.map(recipe => ({
+    ...recipe,
+    userId: user._id,
+    planId: plan._id,
+  }))
 
   let session = null;
   try {
@@ -90,6 +133,7 @@ const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
     );
     await session.commitTransaction();
   } catch (err) {
+    console.error(err);
     if (session) {
       await session.abortTransaction();
     }
@@ -101,14 +145,14 @@ const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
 };
 
 const getRecommendationList = async (req, res) => {
-  const recommendationList = await Recommendation.find({});
+  const recommendationList = await Recommendation.find({}).sort({ score: -1 });
   return success(res, "get recommendation List success", recommendationList);
 };
 
 const getPromptList = async (req, res) => {
   const { user } = req;
 
-  const promptList = await Prompt.find({ userId: user._id });
+  const promptList = await Prompt.find({ userId: user._id }).sort({ frequency: -1 });
   return success(res, "get prompt list success", promptList);
 };
 
@@ -117,11 +161,29 @@ const getPlan = async (req, res) => {
   const { id } = req.query;
 
   const plan = await Plan.findById(id);
-  if (plan.userId !== user.id) {
+  if (!plan.userId.equals(user._id)) {
     return forbidden(res, "you have no access to this plan");
   }
 
   return success(res, "get plan success", plan);
+};
+
+const getPlanDetail = async (req, res) => {
+  const { user } = req;
+  const { id } = req.query;
+
+  const plan = await Plan.findById(id);
+  if (!plan.userId.equals(user._id)) {
+    return forbidden(res, "you have no access to this plan");
+  }
+
+  const recipes = await Recipe.find({ userId: user._id, planId: plan._id });
+
+  const planDetail = {
+    plan,
+    recipes,
+  };
+  return success(res, "get plan detail success", planDetail);
 };
 
 const postRerunPlan = async (req, res) => {
@@ -129,7 +191,7 @@ const postRerunPlan = async (req, res) => {
   const { id } = req.body;
 
   const plan = await Plan.findById(id);
-  if (plan.userId !== user.id) {
+  if (!plan.userId.equals(user._id)) {
     return forbidden(res, "You have no access to this plan");
   }
 
@@ -166,7 +228,7 @@ const postDeletePlan = async (req, res) => {
   const { id } = req.body;
 
   const plan = await Plan.findById(id);
-  if (plan.userId !== user.id) {
+  if (!plan.userId.equals(user._id)) {
     return forbidden(res, "You have no access to this plan");
   }
 
@@ -185,6 +247,7 @@ export {
   getRecommendationList,
   getPromptList,
   getPlan,
+  getPlanDetail,
   postRerunPlan,
   postDeletePlan,
 };

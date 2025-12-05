@@ -35,12 +35,6 @@ const StepSchema = new mongoose.Schema(
 );
 const RecipeSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      index: true,
-    },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
     imageUrl: { type: String, default: "" },
@@ -51,8 +45,7 @@ const RecipeSchema = new mongoose.Schema(
     sourceId: { type: String, default: null }, // e.g., planning id or external id
     ingredients: { type: [IngredientSchema], default: [] },
     steps: { type: [StepSchema], default: [] },
-  },
-  { timestamps: true }
+  }
 );
 const Recipe = mongoose.model("Recipe", RecipeSchema);
 
