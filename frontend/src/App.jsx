@@ -5,20 +5,42 @@ import Profile from "./pages/Profile";
 import Cook from "./pages/Cook";
 import Inventory from "./pages/Inventory";
 import Planning from "./pages/planning";
-import PlanDisp from "./pages/planning/PlanDisp";
+import Register from "./pages/auth/register";
+import Login from "./pages/auth/login";
+import { AuthProvider } from "./auth/AuthContent";
+import ProtectedRoute from "./auth/ProtectedRoute";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/cook" element={<Cook />} />
-        <Route path="/inventory" element={<Inventory />} />
-        <Route path="/planning" element={<Planning />} />
-        <Route path="/planning/plan" element={<PlanDisp />} />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/cook" element={
+            <ProtectedRoute>
+              <Cook />
+            </ProtectedRoute>
+          } />
+          <Route path="/inventory" element={
+            <ProtectedRoute>
+              <Inventory />
+            </ProtectedRoute>
+          } />
+          <Route path="/planning" element={
+            <ProtectedRoute>
+              <Planning />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
-}
+};
