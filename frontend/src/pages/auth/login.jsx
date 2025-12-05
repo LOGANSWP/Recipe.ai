@@ -11,6 +11,7 @@ import {
 
 import { login } from "../../api/authApi";
 import { useAuth } from "../../auth/AuthContent";
+import AuthLayout from "./AuthLayout";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -43,9 +44,12 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full h-screen flex justify-center items-center bg-gray-100">
-      <Card title="User Login" className="w-80">
-        <Form onFinish={handleOnFinish} layout="vertical">
+    <AuthLayout>
+      <Card title="User Login" className="w-96">
+        <Form
+          onFinish={handleOnFinish}
+          layout="vertical"
+        >
           <Form.Item
             label="Email"
             name="email"
@@ -77,12 +81,12 @@ const Login = () => {
           <div className="text-center">
             <Space>
               Don't have an account yet?
-              <Link to="/register">Login</Link>
+              <Link to="/register">Register</Link>
             </Space>
           </div>
         </Form>
       </Card>
-    </div>
+    </AuthLayout>
   );
 };
 

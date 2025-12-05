@@ -11,6 +11,7 @@ import {
 
 import { register } from "../../api/authApi";
 import { useAuth } from "../../auth/AuthContent";
+import AuthLayout from "./AuthLayout";
 
 const Register = () => {
   const [loading, setLoading] = useState(false);
@@ -45,8 +46,8 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full h-screen flex justify-center items-center bg-gray-100">
-      <Card title="User Register" className="w-80">
+    <AuthLayout>
+      <Card title="User Register" className="w-96">
         <Form onFinish={handleOnFinish} layout="vertical">
           <Form.Item
             label="Nickname"
@@ -116,7 +117,7 @@ const Register = () => {
           </div>
         </Form>
       </Card>
-    </div>
+    </AuthLayout>
   );
 };
 

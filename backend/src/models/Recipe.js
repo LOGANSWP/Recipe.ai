@@ -27,6 +27,12 @@ const RecipeSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    planId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Plan",
+      required: true,
+      index: true,
+    },
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
     imageUrl: { type: String, default: "" },

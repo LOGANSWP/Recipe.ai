@@ -86,10 +86,9 @@ export default function Header() {
                   alt="User avatar"
                   className="w-10 h-10 rounded-full border-2 border-green-500 hover:border-green-600 transition-all"
                 />
-                <FaChevronDown 
-                  className={`text-gray-600 text-sm transition-transform hidden sm:block ${
-                    showDropdown ? 'rotate-180' : ''
-                  }`} 
+                <FaChevronDown
+                  className={`text-gray-600 text-sm transition-transform hidden sm:block ${showDropdown ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -131,9 +130,8 @@ export default function Header() {
           {firebaseUser === null && (
             <Link to="/login">
               <li
-                className="font-medium px-4 py-2 rounded-full 
-                         hover:bg-green-300 transition-colors duration-200 
-                         focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+                className="font-medium px-4 py-2 rounded-full border-2 border-orange-300
+                         hover:bg-orange-300 transition-colors duration-200"
               >
                 Login
               </li>
@@ -142,9 +140,8 @@ export default function Header() {
           {firebaseUser === null && (
             <Link to="/register">
               <li
-                className="font-medium px-4 py-2 rounded-full 
-                         hover:bg-green-300 transition-colors duration-200 
-                         focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2"
+                className="font-medium px-4 py-2 rounded-full border-2 border-green-300
+                         hover:bg-green-300 transition-colors duration-200"
               >
                 Register
               </li>

@@ -1,44 +1,30 @@
-import React, {
+import {
   useEffect,
   useState,
 } from "react";
 
-const mockPrompts = [
-  {
-    id: "pp1",
-    text: "Quick high-protein dinner",
-    freq: 200,
-  },
-  {
-    id: "pp2",
-    text: "Vegetarian lunch under 500 cal",
-    freq: 120,
-  },
-  {
-    id: "pp3",
-    text: "No spicy food",
-    freq: 80,
-  },
-  {
-    id: "pp4",
-    text: "Steak & Salad",
-    freq: 40,
-  },
-  {
-    id: "pp5",
-    text: "Healthy food",
-    freq: 20,
-  },
-  {
-    id: "pp6",
-    text: "Spicy food",
-    freq: 10,
-  },
-];
+import { getPromptList } from "../../api/planningApi";
 
 const PreferredPromptList = ({ onSelect }) => {
   const [expanded, setExpanded] = useState(false);
-  const [prompts, setPrompts] = useState(mockPrompts);
+  const [prompts, setPrompts] = useState([]);
+
+  useEffect(() => {
+    fetchPromptList();
+  }, []);
+
+  const fetchPromptList = async () => {
+    try {
+      const res = await getPromptList();
+      const promptList = res.data.map(prompt => ({
+        ...prompt,
+        short: prompt.text.length > 30 ? `${prompt.text.slice(0, 27)}...` : prompt.text,
+      }))
+      setPrompts(promptList);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div>
@@ -49,11 +35,11 @@ const PreferredPromptList = ({ onSelect }) => {
       <div className="flex flex-wrap gap-2">
         {(expanded ? prompts : prompts.slice(0, 3)).map((prompt) => (
           <button
-            key={prompt.id}
+            key={prompt._id}
             onClick={() => onSelect(prompt.text)}
             className="border px-2 py-1 rounded-lg bg-green-50 hover:bg-green-200 whitespace-nowrap"
           >
-            {prompt.text}
+            {prompt.short}
           </button>
         ))}
 
@@ -64,6 +50,12 @@ const PreferredPromptList = ({ onSelect }) => {
           >
             {expanded ? "Collapse" : "Expand all..."}
           </button>
+        )}
+
+        {prompts.length === 0 && (
+          <p className="text-center text-gray-500">
+            No prompts found.
+          </p>
         )}
       </div>
     </div>
@@ -91,9 +83,9 @@ const CreatePlanForm = ({ onGenerate }) => {
 
   const handleSubmit = () => {
     onGenerate({
-      time_limit_minutes: timeLimit,
-      meal_type: mealType,
-      people_nums: people,
+      timeLimitMinutes: timeLimit,
+      mealType: mealType,
+      peopleNums: people,
       prompt,
     });
     setPrompt("");

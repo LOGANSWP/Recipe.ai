@@ -6,7 +6,7 @@ const setUserCache = (userId, user) => {
   userCache.set(userId, { user, expires: Date.now() + USER_CACHE_TTL });
 };
 
-const getUserCache = async (userId) => {
+const getUserCache = (userId) => {
   const cachedUser = userCache.get(userId);
   if (!cachedUser) {
     return null;

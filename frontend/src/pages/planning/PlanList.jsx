@@ -1,7 +1,13 @@
-import React from "react";
 import { IoSearchOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 const PlanCard = ({ item }) => {
+  const navigate = useNavigate();
+
+  const handleViewOnClick = (planId) => {
+    navigate(`/planning/plan?id=${planId}`);
+  };
+
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex flex-col h-full
     transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
@@ -19,11 +25,12 @@ const PlanCard = ({ item }) => {
       </div>
 
       <p className="text-xs text-gray-500 mt-2">
-        Created at: {item.created_at}
+        Created at: {item.createdAt}
       </p>
 
       <button
         className="mt-auto self-end bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 text-sm"
+        onClick={() => handleViewOnClick(item._id)}
       >
         View / Edit
       </button>
@@ -53,12 +60,12 @@ const PlanList = ({ plans, searchTerm, onSearchChange }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans.map((plan) => (
-          <PlanCard key={plan.id} item={plan} />
+          <PlanCard key={plan._id} item={plan} />
         ))}
       </div>
 
       {plans.length === 0 && (
-        <p className="text-center text-gray-500 py-10">
+        <p className="text-gray-500 py-10">
           No plan found.
         </p>
       )}

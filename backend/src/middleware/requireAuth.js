@@ -1,6 +1,6 @@
 import admin from "../auth/firebase.js";
 import { getUserCache, setUserCache } from "../auth/userCache.js";
-import User from "../models/user.js";
+import User from "../models/User.js";
 
 // If the `roles` parameter is not specified, all user types are allowed access by default.
 // Otherwise, the user must be of the specified types.
@@ -17,7 +17,7 @@ const requireAuth = (roles = []) => {
     try {
       const { uid } = await admin.auth().verifyIdToken(token);
 
-      let user = await getUserCache(uid);
+      let user = getUserCache(uid);
       if (!user) {
         user = await User.findOne({ firebaseId: uid });
         if (!user) {
