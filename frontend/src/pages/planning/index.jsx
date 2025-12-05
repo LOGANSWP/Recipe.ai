@@ -3,7 +3,7 @@ import {
   useState,
   useMemo,
 } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Space, notification, message } from "antd";
 
 import AIRecommendation from "./AIRecommendation";
@@ -13,7 +13,9 @@ import { getPlanList, postCreatePlan } from "../../api/planningApi";
 
 const Planning = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [plans, setPlans] = useState([]);
+  const [plans, setPlans] = useState(mockPlans);
+
+  const navigate = useNavigate();
 
   const [notificationApi, contextHolder] = notification.useNotification();
 
@@ -79,8 +81,9 @@ const Planning = () => {
     const newPlan = {
       ...payload,
       title: payload.prompt || "AI Generated Plan",
-      tags: [payload.mealType, `${payload.peopleNums} people`],
+      tags: [payload.meal_type, `${payload.people_nums} people`],
     };
+
     createPlan(newPlan);
   };
 
