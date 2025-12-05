@@ -1,21 +1,9 @@
-import React, {
+import {
+  useEffect,
   useState,
 } from "react";
 
-const mockRecommendations = [
-  {
-    id: "r1",
-    title: "Stir-Fry Chicken",
-    img: "https://placehold.co/350x250/f8b4b4/7c2d2d?text=Chicken",
-    tags: ["Dinner", "Protein"],
-  },
-  {
-    id: "r2",
-    title: "Veggie Bowl",
-    img: "https://placehold.co/350x250/a7f3d0/065f46?text=Veggie",
-    tags: ["Vegetarian", "Lunch"],
-  },
-];
+import { getRecommendationList } from "../../api/planningApi";
 
 const RecommendationCard = ({ item }) => {
   return (
@@ -44,7 +32,21 @@ const RecommendationCard = ({ item }) => {
 };
 
 const AIRecommendation = () => {
-  const [recommendations, setRecommendations] = useState(mockRecommendations);
+  const [recommendations, setRecommendations] = useState([]);
+
+  useEffect(() => {
+    fetchRecommendationList();
+  }, []);
+
+  const fetchRecommendationList = async () => {
+    try {
+      const res = await getRecommendationList();
+      const { data } = res;
+      setRecommendations(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-4 h-full">

@@ -1,31 +1,22 @@
-import React, {
+import {
   useEffect,
   useState,
   useMemo,
 } from "react";
+import { message } from "antd";
 
 import AIRecommendation from "./AIRecommendation";
 import CreatePlanForm from "./CreatePlanForm";
 import PlanList from "./PlanList";
-
-const mockPlans = [
-  {
-    id: "p1",
-    title: "Quick Dinner for 2",
-    tags: ["Dinner", "Quick", "Low-Cal"],
-    created_at: "2025-11-10 18:30",
-  },
-  {
-    id: "p2",
-    title: "High Protein Lunch",
-    tags: ["Lunch", "Protein"],
-    created_at: "2025-11-09 12:00",
-  },
-];
+import { getPlanList, postCreatePlan } from "../../api/planningApi";
 
 const Planning = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [plans, setPlans] = useState(mockPlans);
+  const [plans, setPlans] = useState([]);
+
+  useEffect(() => {
+    fetchPlanList();
+  }, []);
 
   const filteredPlans = useMemo(() => {
     return plans.filter((plan) => {
@@ -34,15 +25,33 @@ const Planning = () => {
     });
   }, [searchTerm, plans]);
 
+  const fetchPlanList = async () => {
+    try {
+      const res = await getPlanList();
+      const { data } = res;
+      setPlans(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const createPlan = async (plan) => {
+    try {
+      await postCreatePlan(plan);
+      message.success("Create plan success");
+    } catch (err) {
+      console.error(err);
+    }
+    fetchPlanList();
+  };
+
   const handleGeneratePlan = (payload) => {
     const newPlan = {
-      id: "plan " + Date.now(),
+      ...payload,
       title: payload.prompt || "AI Generated Plan",
-      tags: [payload.meal_type, `${payload.people_nums} people`],
-      created_at: new Date().toLocaleString(),
+      tags: [payload.mealType, `${payload.peopleNums} people`],
     };
-
-    setPlans((prev) => [newPlan, ...prev]);
+    createPlan(newPlan);
   };
 
   return (

@@ -32,7 +32,7 @@ const ErrorLayout = ({ code, title, message, action }) => {
       <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
 
       <div className="relative z-10 flex flex-col items-center text-center p-10 bg-white rounded-2xl shadow-xl border border-gray-100">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-800">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-800">
           <span className="text-orange-400">{code}</span>
           <span className="text-green-600">{title}</span>
         </h1>

@@ -7,6 +7,7 @@ import morgan from "morgan";
 import inventoryRouter from "../src/routes/inventoryRoutes.js"
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
+import planningRouter from "./routes/planningRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 
 dotenv.config()
@@ -40,6 +41,7 @@ app.use(morgan('short'));
 app.use('/api/inventory', inventoryRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/planning", planningRouter);
 
 // Global error handling
 app.use(errorHandler);

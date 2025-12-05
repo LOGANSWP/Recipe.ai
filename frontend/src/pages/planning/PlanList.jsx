@@ -1,4 +1,3 @@
-import React from "react";
 import { IoSearchOutline } from "react-icons/io5";
 
 const PlanCard = ({ item }) => {
@@ -19,7 +18,7 @@ const PlanCard = ({ item }) => {
       </div>
 
       <p className="text-xs text-gray-500 mt-2">
-        Created at: {item.created_at}
+        Created at: {item.createdAt}
       </p>
 
       <button
