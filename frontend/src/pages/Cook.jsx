@@ -15,22 +15,16 @@ export default function Cook() {
   const [recipe, setRecipe] = useState(null);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingRecipe, setIsLoadingRecipe] = useState(false);
-  const [idx, setIdx] = useState(0);
+  const [idx, setIdx] = useState(0); 
   const [showOverview, setShowOverview] = useState(false);
   const stepRefs = useRef([]);
   const containerRef = useRef(null);
-  const pagingLockRef = useRef(false);
-  const wheelThresholdRef = useRef(18);
-  const rafRef = useRef(0);
-  const targetTopRef = useRef(0);
 
-  // Progress based on steps count
   const progress = useMemo(() => {
     const total = recipe?.steps?.length || 0;
     return total ? Math.round(((idx + 1) / total) * 100) : 0;
   }, [idx, recipe?.steps?.length]);
 
-  // Fetch list of recipes for dropdown
   useEffect(() => {
     const fetchList = async () => {
       try {
@@ -51,7 +45,6 @@ export default function Cook() {
     fetchList();
   }, [initialRecipeId, setSearchParams]);
 
-  // Fetch selected recipe detail
   useEffect(() => {
     const loadRecipe = async () => {
       if (!selectedId) {
@@ -63,6 +56,7 @@ export default function Cook() {
         const res = await getRecipeById(selectedId);
         setRecipe(res);
         setIdx(0);
+        stepRefs.current = []; 
       } catch (err) {
         console.error(err);
         message.error("Failed to load recipe");
@@ -73,45 +67,53 @@ export default function Cook() {
     loadRecipe();
   }, [selectedId]);
 
+  // Intersection Observer for current step highlight and progress (Remains the same, uses the top of the viewport)
   useEffect(() => {
+    if (!containerRef.current || !recipe?.steps?.length) {
+      return () => {};
+    }
+
     const els = stepRefs.current.filter(Boolean);
+    
     const io = new IntersectionObserver(
       (entries) => {
         const visible = entries
           .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setIdx(Number(visible.target.dataset.index));
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]; 
+        
+        if (visible && visible.intersectionRatio > 0.45) { 
+            setIdx(Number(visible.target.dataset.index));
+        }
       },
-      { root: containerRef.current, threshold: [0.35, 0.6], rootMargin: "0px 0px -30% 0px" }
+      { 
+        root: containerRef.current, 
+        threshold: [0.3, 0.45, 0.6], 
+        // We set rootMargin to align the observation point near the top/center of the container
+        // This is key for stable detection when snap is active.
+        rootMargin: "0px 0px -40% 0px" 
+      }
     );
+
     els.forEach((el) => io.observe(el));
+
     return () => io.disconnect();
-  }, []);
+  }, [recipe, selectedId]); 
 
   const scrollToIndex = (i) => {
     const total = recipe?.steps?.length || 0;
     const n = Math.max(0, Math.min(total - 1, i));
     const el = stepRefs.current[n];
     const root = containerRef.current;
+    
     if (!el || !root) return;
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    pagingLockRef.current = true;
-    const top = el.offsetTop - 16;
-    targetTopRef.current = top;
-    root.scrollTo({ top, behavior: "smooth" });
-    const tick = () => {
-      const diff = Math.abs(root.scrollTop - targetTopRef.current);
-      if (diff <= 2) {
-        pagingLockRef.current = false;
-        rafRef.current = 0;
-      } else {
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-    rafRef.current = requestAnimationFrame(tick);
+    
+    setIdx(n); 
+    
+    // Smooth scroll, the snap will take over when scrolling stops
+    root.scrollTo({ top: el.offsetTop - 16, behavior: "smooth" }); 
   };
   const go = scrollToIndex;
-
+  
   useEffect(() => {
     if (showOverview) {
       const prev = document.body.style.overflow;
@@ -122,45 +124,33 @@ export default function Cook() {
     }
   }, [showOverview]);
 
-  useEffect(() => {
-    const root = containerRef.current;
-    if (!root) return;
-    const onWheel = (e) => {
-      if (showOverview) return;
-      e.preventDefault();
-      if (pagingLockRef.current) return;
-      const delta = e.deltaY;
-      const threshold = wheelThresholdRef.current;
-      if (Math.abs(delta) < threshold) return;
-      if (delta > 0) scrollToIndex(idx + 1);
-      else scrollToIndex(idx - 1);
-    };
-    root.addEventListener("wheel", onWheel, { passive: false });
-    return () => root.removeEventListener("wheel", onWheel);
-  }, [idx, showOverview]);
-
   const steps = recipe?.steps || [];
   const ingredients = recipe?.ingredients || [];
 
   return (
     <main className="relative bg-gray-50 min-h-[calc(100vh-80px)] overflow-hidden">
+      {/* Background elements */}
       <div className="absolute -top-20 -left-20 w-72 h-72 bg-yellow-200 rounded-full opacity-50 blur-3xl -z-0" />
       <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-200 rounded-full opacity-50 blur-3xl -z-0" />
       <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
 
       <div className="sticky top-0 z-30 bg-white/70 backdrop-blur border-b">
-        <div className="max-w-5xl mx-auto px-4 flex items-center gap-3">
+        {/* Header Layout */}
+        <div className="max-w-5xl mx-auto px-4 flex items-center gap-3 py-2"> 
           <button
-            onClick={() => nav(-1)}
-            className="px-1 py-1 hover:bg-gray-50 flex items-center gap-2"
+            onClick={() => nav("/planning")}
+            className="px-1 py-1 hover:bg-gray-50 flex items-center gap-2 flex-shrink-0"
           >
               <FaArrowLeft />
           </button>
-          <div className="flex-1 flex items-center gap-3">
-            <h1 className="text-xl font-bold truncate">{recipe?.title || "Select a recipe"}</h1>
+          
+          <div className="flex-1 min-w-0 flex items-center gap-3"> 
+            <h1 className="text-xl font-bold truncate leading-tight hidden sm:block">
+                {recipe?.title || "Select a recipe"}
+            </h1>
             <Select
               size="middle"
-              className="min-w-[220px]"
+              className="min-w-[220px] max-w-[300px] flex-shrink-0" 
               placeholder="Choose a recipe"
               loading={isLoadingList}
               value={selectedId || undefined}
@@ -171,16 +161,8 @@ export default function Cook() {
               options={recipes.map((r) => ({ label: r.title, value: r._id }))}
             />
           </div>
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-gray-600 hidden sm:block">
-              {recipe ? (
-                <>
-                  Servings: {recipe.servings ?? "-"} · Total: {recipe.totalTimeMin ?? "-"} min
-                </>
-              ) : (
-                "No recipe loaded"
-              )}
-            </div>
+          
+          <div className="flex items-center gap-3 flex-shrink-0">
             <button
               onClick={() => setShowOverview(true)}
               className="px-1 py-1 rounded-lg bg-green-600 text-white hover:bg-green-700 flex items-center gap-2"
@@ -189,13 +171,24 @@ export default function Cook() {
             </button>
           </div>
         </div>
+        
         <div className="h-1 bg-gray-200">
           <div className="h-full bg-green-600 transition-all" style={{ width: `${progress}%` }} />
         </div>
       </div>
-
+      
       <div className="relative z-0 max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
         <aside className="md:col-span-1 space-y-4">
+          {/* Block for Recipe Name, Servings, and Time */}
+          {recipe && (
+             <div className="p-4 rounded-2xl border bg-white shadow-sm">
+                <h2 className="text-2xl font-bold mb-1">{recipe.title}</h2> 
+                <div className="text-sm text-gray-600">
+                    Servings: {recipe.servings ?? "-"} · Total Time: {recipe.totalTimeMin ?? "-"} min
+                </div>
+             </div>
+          )}
+
           {recipe?.imageUrl && (
             <img
               src={recipe.imageUrl}
@@ -203,6 +196,8 @@ export default function Cook() {
               className="w-full h-48 object-cover rounded-2xl border shadow-sm"
             />
           )}
+
+          {/* Ingredients block */}
           <div className="p-4 rounded-2xl border bg-white shadow-sm">
             <h2 className="font-semibold mb-2">Ingredients</h2>
             {ingredients.length === 0 ? (
@@ -220,10 +215,12 @@ export default function Cook() {
           </div>
         </aside>
 
+        {/* FIX: Re-enable Scroll Snap and adjust padding for centering */}
         <section
           ref={containerRef}
-          className="md:col-span-2 h-[calc(100vh-180px)] overflow-y-auto rounded-2xl border bg-white shadow-sm scroll-smooth scroll-pt-6"
-          style={{ scrollSnapType: "y mandatory" }}
+          className="md:col-span-2 h-[calc(100vh-180px)] overflow-y-auto rounded-2xl border bg-white shadow-sm scroll-smooth"
+          // Re-enable Scroll Snap Type
+          style={{ scrollSnapType: "y mandatory", scrollPaddingTop: "16px" }}
         >
           {isLoadingRecipe ? (
             <div className="flex items-center justify-center h-full">
@@ -241,13 +238,18 @@ export default function Cook() {
             steps.map((s, i) => (
               <div
                 key={`${s._id || s.order || i}`}
-                ref={(el) => (stepRefs.current[i] = el)}
+                ref={(el) => (stepRefs.current[i] = el)} 
                 data-index={i}
-                className="min-h-[82vh] p-6 flex items-center"
-                style={{ scrollSnapAlign: "start" }}
+                // Use `min-h-[calc(100vh-180px)]` or similar to make each step fill the container height
+                // Removed `flex items-center` to allow snap-start to work from the top
+                className="min-h-[calc(100vh-180px)] p-6" 
+                // Re-enable Scroll Snap Align
+                style={{ scrollSnapAlign: "start" }} 
               >
-                <div
-                  className={`w-full p-6 rounded-3xl border shadow-sm ${
+                {/* Center the content of the step card visually within the viewport height */}
+                <div className={`
+                    w-full h-full flex flex-col justify-center 
+                    p-6 rounded-3xl border shadow-sm ${
                     i === idx ? "bg-green-50 border-green-300" : "bg-gray-50"
                   }`}
                 >
@@ -262,7 +264,7 @@ export default function Cook() {
           )}
         </section>
       </div>
-
+      
       {showOverview && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="w-full max-w-4xl rounded-2xl bg-white border shadow-xl">
@@ -283,7 +285,7 @@ export default function Cook() {
                       key={`${s._id || s.order || i}`}
                       onClick={() => {
                         setShowOverview(false);
-                        setTimeout(() => go(i), 0);
+                        setTimeout(() => go(i), 0); 
                       }}
                       className="text-left p-4 rounded-xl border hover:border-green-400 hover:bg-green-50"
                     >
