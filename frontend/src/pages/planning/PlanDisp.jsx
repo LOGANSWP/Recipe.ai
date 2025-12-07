@@ -49,8 +49,8 @@ function Dish({ item, selected, onDelete, openDishId, setOpenDishId, ...props })
       controls.start({ x: -maxWidth });
       setDragX(-maxWidth);
       setLastX(-maxWidth);
-      if (setId && openDishId !== item.id) {
-        setOpenDishId(item.id);
+      if (setId && openDishId !== item._id) {
+        setOpenDishId(item._id);
       }
     } else {
       controls.start({ x: 0 });
@@ -74,8 +74,8 @@ function Dish({ item, selected, onDelete, openDishId, setOpenDishId, ...props })
   };
 
   useEffect(() => {
-    if (lastX < 0 && openDishId !== item.id) {
-      console.log('Closing dish', item.id);
+    if (lastX < 0 && openDishId !== item._id) {
+      console.log('Closing dish', item._id);
       setOpen(false);
     }
   }, [openDishId]);
@@ -202,7 +202,12 @@ const PlanDisp = () => {
   };
 
   const handleConfirmPlan = () => {
-    navigate('/cook?', { state: { plan: dishes } });
+    // Prefer the first selected dish; fall back to the first dish
+    const targetId = (selectedDishes[0]) || dishes?.[0]?._id;
+    if (!targetId) {
+      return;
+    }
+    navigate(`/cook?id=${targetId}`);
   };
 
   const handleSelect = (itemId) => {
@@ -215,7 +220,7 @@ const PlanDisp = () => {
   };
 
   const handleDelete = (itemId) => {
-    setDishes((prev) => prev.filter((item) => item.id !== itemId));
+    setDishes((prev) => prev.filter((item) => item._id !== itemId));
   };
 
   return (
@@ -229,7 +234,7 @@ const PlanDisp = () => {
         isSelecting={isSelecting}
         onLock={() => { }}
         onDelete={() => {
-          setDishes((prev) => prev.filter((dish) => !selectedDishes.includes(dish.id)));
+          setDishes((prev) => prev.filter((dish) => !selectedDishes.includes(dish._id)));
           setSelectedDishes([]);
         }}
         onConfirm={handleConfirmPlan}
@@ -267,9 +272,9 @@ const PlanDisp = () => {
             <Dish
               key={item._id}
               item={item}
-              selected={selectedDishes.includes(item.id)}
-              onClick={() => handleSelect(item.id)}
-              onDelete={() => handleDelete(item.id)}
+              selected={selectedDishes.includes(item._id)}
+              onClick={() => handleSelect(item._id)}
+              onDelete={() => handleDelete(item._id)}
               openDishId={openDishId}
               setOpenDishId={setOpenDishId}
             />
