@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
-import { IoSearchOutline } from "react-icons/io5";
+import { IoSearchOutline, IoPlayOutline, IoRefreshCircleOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { Space } from "antd";
 
@@ -18,6 +18,14 @@ const PlanCard = ({ plan, deletePlan }) => {
         <p className="font-semibold">{plan.truncatedTitle}</p>
 
         <AiOutlineDelete className="hover:text-red-700" onClick={() => deletePlan(plan._id)} />
+
+        {plan.status === "fail" && (
+          <IoRefreshCircleOutline className="hover:text-green-700" onClick={() => deletePlan(plan._id)} />
+        )}
+
+        {plan.status === "waiting" && (
+          <IoPlayOutline className="hover:text-green-700" onClick={() => handleViewOnClick(plan._id)} />
+        )}
       </Space>
 
       <div className="flex flex-wrap mt-2 gap-1">

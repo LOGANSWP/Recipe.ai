@@ -307,8 +307,28 @@ const postDeletePlan = async (req, res) => {
     return badRequest(res, "The plan is still running, please try again later");
   }
 
-  await Plan.findByIdAndDelete(id);
-  return deleteSuccess(res, "delete plan success");
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+
+    await Plan.findByIdAndDelete(id, { session });
+    await Recipe.deleteMany({ planId: id }, { session });
+
+    await session.commitTransaction();
+    return deleteSuccess(res, "delete plan success");
+  } catch (err) {
+    console.error("postDeletePlan", err);
+    if (session) {
+      await session.abortTransaction();
+    }
+    return internalError(res);
+  } finally {
+    if (session) {
+      session.endSession();
+    }
+  }
 };
 
 // update plan could be complicated, it's better to delete the old one and then create a new one
