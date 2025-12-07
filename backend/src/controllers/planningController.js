@@ -3,6 +3,7 @@ import util from "util";
 
 import Ingredient from "../models/Ingredient.js";
 import Kitchenware from "../models/Kitchenware.js";
+import LLMLog from "../models/LLMLog.js";
 import Plan from "../models/Plan.js";
 import Recommendation from "../models/Recommendation.js";
 import Prompt from "../models/Prompt.js";
@@ -74,7 +75,7 @@ const postCreatePlan = async (req, res) => {
     await session.commitTransaction();
     return createSuccess(res, "create plan success", createdPlan);
   } catch (err) {
-    console.error(err);
+    console.error("postCreatePlan", err);
     if (session) {
       await session.abortTransaction();
     }
@@ -86,57 +87,127 @@ const postCreatePlan = async (req, res) => {
   }
 };
 
-const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
-  const userPrompt = util.format(CREATE_PLAN_USER_PROMPT_TEMPLATE, user, plan, ingredients, kitchenwares);
-  // console.log("userPrompt", userPrompt);
-  let recipes = null;
-  for (let _ = 0; _ < GEMINI_RETRY_NUM; _++) {
-    try {
-      const recipesJson = await interactCreatePlan(userPrompt);
-      // console.log("recipesJson", recipesJson);
-      recipes = JSON.parse(recipesJson.replaceAll("```json", "").replaceAll("```", ""));
-      if (recipes !== null && Array.isArray(recipes)) {
-        break;
-      }
-    } catch (err) {
-      console.error(err);
+const slimCreateRecipesInputs = (user, plan, ingredients, kitchenwares) => {
+  const slimUser = {
+    name: user.name,
+    email: user.email,
+  };
+  const silmPlan = {
+    title: plan.title,
+    tags: plan.tags.map(tag => tag), // get rid of class methods
+    prompt: plan.prompt,
+    mealType: plan.mealType,
+    peopleNums: plan.peopleNums,
+    timeLimitMinutes: plan.timeLimitMinutes,
+  };
+  const slimIngredients = ingredients.map(ingredient => ({
+    name: ingredient.name,
+    quantity: ingredient.quantity,
+    expirationDate: ingredient.expirationDate,
+    category: ingredient.category,
+  }));
+  const slimKitchenwares = kitchenwares.map(kitchenware => ({
+    name: kitchenware.name,
+    quantity: kitchenware.quantity,
+  }));
+  return { slimUser, silmPlan, slimIngredients, slimKitchenwares };
+};
+
+const validateRecipes = (recipes) => {
+  if (!Array.isArray(recipes)) {
+    throw new Error("Recipes object is not a array");
+  }
+  recipes.forEach(recipe => {
+    if (!recipe.title || !Array.isArray(recipe.ingredients) || !Array.isArray(recipe.steps)) {
+      throw new Error("One recipe object does not have required attribute");
     }
-  }
+    recipe.ingredients.forEach(ingredient => {
+      if (!ingredient.name) {
+        throw new Error("One ingredient object does not have required attribute");
+      }
+    });
+    recipe.steps.forEach(step => {
+      if (!step.order || !step.text) {
+        throw new Error("One step object does not have required attribute");
+      }
+    });
+  });
+};
 
-  if (recipes === null || !Array.isArray(recipes)) {
-    await Plan.findByIdAndUpdate(
-      plan._id,
-      { status: "fail" },
-      { new: true, runValidators: true },
-    );
-    return;
-  }
-
-  // console.log("get recipes success");
-  recipes = recipes.map(recipe => ({
-    ...recipe,
-    userId: user._id,
-    planId: plan._id,
-  }))
+const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
+  const { slimUser, silmPlan, slimIngredients, slimKitchenwares } = slimCreateRecipesInputs(user, plan, ingredients, kitchenwares);
+  const userPrompt = util.format(CREATE_PLAN_USER_PROMPT_TEMPLATE, slimUser, silmPlan, slimIngredients, slimKitchenwares);
 
   let session = null;
   try {
     session = await mongoose.startSession();
     session.startTransaction();
 
-    await Recipe.create(recipes, { session });
+    let recipesJson = null;
+    let recipes = null;
+    let success = false;
+    for (let _ = 0; _ < GEMINI_RETRY_NUM; _++) {
+      try {
+        recipesJson = await interactCreatePlan(userPrompt);
+        recipes = JSON.parse(recipesJson.replaceAll("```json", "").replaceAll("```", ""));
 
-    await Plan.findByIdAndUpdate(
-      plan._id,
-      { status: "success" },
-      { new: true, runValidators: true, session },
-    );
+        validateRecipes(recipes);
+        recipes.forEach(recipe => {
+          recipe.userId = user._id;
+          recipe.planId = plan._id;
+        });
+        await Recipe.create(recipes, { session });
+        await Plan.findByIdAndUpdate(
+          plan._id,
+          { status: "success" },
+          { new: true, runValidators: true, session },
+        );
+
+        const newLLMLog = {
+          userId: user._id,
+          taskName: "createRecipesByLLM",
+          userPrompt,
+          llmResponse: recipesJson,
+        };
+        await LLMLog.create([newLLMLog], { session });
+        success = true;
+      } catch (err) {
+        console.error("createRecipesByLLM", err);
+        const newLLMLogFail = {
+          userId: user._id,
+          taskName: "createRecipesByLLM",
+          userPrompt,
+          llmResponse: recipesJson,
+          errorMessage: err.message,
+        };
+        await LLMLog.create([newLLMLogFail], { session });
+      }
+
+      if (success) {
+        break;
+      }
+    }
+
+    if (!success) {
+      await Plan.findByIdAndUpdate(
+        plan._id,
+        { status: "fail" },
+        { new: true, runValidators: true, session },
+      );
+    }
+
     await session.commitTransaction();
   } catch (err) {
-    console.error(err);
+    console.error("createRecipesByLLM", err);
     if (session) {
       await session.abortTransaction();
     }
+
+    await Plan.findByIdAndUpdate(
+      plan._id,
+      { status: "fail" },
+      { new: true, runValidators: true },
+    );
   } finally {
     if (session) {
       session.endSession();
@@ -233,11 +304,31 @@ const postDeletePlan = async (req, res) => {
   }
 
   if (plan.status === "waiting") {
-    return badRequest(res, "The plan is still running, please try later");
+    return badRequest(res, "The plan is still running, please try again later");
   }
 
-  await Plan.findByIdAndDelete(id);
-  return deleteSuccess(res, "delete plan success");
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+
+    await Plan.findByIdAndDelete(id, { session });
+    await Recipe.deleteMany({ planId: id }, { session });
+
+    await session.commitTransaction();
+    return deleteSuccess(res, "delete plan success");
+  } catch (err) {
+    console.error("postDeletePlan", err);
+    if (session) {
+      await session.abortTransaction();
+    }
+    return internalError(res);
+  } finally {
+    if (session) {
+      session.endSession();
+    }
+  }
 };
 
 // update plan could be complicated, it's better to delete the old one and then create a new one

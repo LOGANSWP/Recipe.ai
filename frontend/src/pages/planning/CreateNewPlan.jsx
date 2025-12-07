@@ -1,30 +1,11 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState, useMemo } from "react";
 
-import { getPromptList } from "../../api/planningApi";
-
-const PreferredPromptList = ({ onSelect }) => {
+const PreferredPromptList = ({ prompts, selectPrompt }) => {
   const [expanded, setExpanded] = useState(false);
-  const [prompts, setPrompts] = useState([]);
 
-  useEffect(() => {
-    fetchPromptList();
-  }, []);
-
-  const fetchPromptList = async () => {
-    try {
-      const res = await getPromptList();
-      const promptList = res.data.map(prompt => ({
-        ...prompt,
-        short: prompt.text.length > 30 ? `${prompt.text.slice(0, 27)}...` : prompt.text,
-      }))
-      setPrompts(promptList);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const truncatedPrompts = useMemo(() => {
+    return prompts.slice(0, 3);
+  }, [prompts]);
 
   return (
     <div>
@@ -33,13 +14,13 @@ const PreferredPromptList = ({ onSelect }) => {
       </p>
 
       <div className="flex flex-wrap gap-2">
-        {(expanded ? prompts : prompts.slice(0, 3)).map((prompt) => (
+        {(expanded ? prompts : truncatedPrompts).map((prompt) => (
           <button
             key={prompt._id}
-            onClick={() => onSelect(prompt.text)}
+            onClick={() => selectPrompt(prompt.text)}
             className="border px-2 py-1 rounded-lg bg-green-50 hover:bg-green-200 whitespace-nowrap"
           >
-            {prompt.short}
+            {prompt.truncatedText}
           </button>
         ))}
 
@@ -62,7 +43,7 @@ const PreferredPromptList = ({ onSelect }) => {
   );
 };
 
-const CreatePlanForm = ({ onGenerate }) => {
+const CreateNewPlan = ({ prompts, createPlan }) => {
   const [timeLimit, setTimeLimit] = useState(30);
   const [mealType, setMealType] = useState("Dinner");
   const [people, setPeople] = useState(2);
@@ -82,9 +63,9 @@ const CreatePlanForm = ({ onGenerate }) => {
   }, []);
 
   const handleSubmit = () => {
-    onGenerate({
+    createPlan({
       timeLimitMinutes: timeLimit,
-      mealType: mealType,
+      mealType,
       peopleNums: people,
       prompt,
     });
@@ -150,9 +131,8 @@ const CreatePlanForm = ({ onGenerate }) => {
       </div>
 
       <PreferredPromptList
-        onSelect={(p) => {
-          setPrompt(p);
-        }}
+        prompts={prompts}
+        selectPrompt={(prompt) => setPrompt(prompt)}
       />
 
       <div>
@@ -176,4 +156,4 @@ const CreatePlanForm = ({ onGenerate }) => {
   );
 };
 
-export default CreatePlanForm;
+export default CreateNewPlan;

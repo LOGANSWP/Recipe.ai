@@ -81,7 +81,9 @@ const Login = () => {
           <div className="text-center">
             <Space>
               Don't have an account yet?
-              <Link to="/register">Register</Link>
+              <Link to="/register" className="underline">
+                Go to Register
+              </Link>
             </Space>
           </div>
         </Form>
