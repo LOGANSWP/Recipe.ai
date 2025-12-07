@@ -1,7 +1,10 @@
+import { useState, useMemo } from "react";
+import { AiOutlineDelete } from "react-icons/ai";
 import { IoSearchOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { Space } from "antd";
 
-const PlanCard = ({ item }) => {
+const PlanCard = ({ plan, deletePlan }) => {
   const navigate = useNavigate();
 
   const handleViewOnClick = (planId) => {
@@ -11,10 +14,14 @@ const PlanCard = ({ item }) => {
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex flex-col h-full
     transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
-      <p className="font-semibold">{item.title}</p>
+      <Space size="middle">
+        <p className="font-semibold">{plan.truncatedTitle}</p>
+
+        <AiOutlineDelete className="hover:text-red-700" onClick={() => deletePlan(plan._id)} />
+      </Space>
 
       <div className="flex flex-wrap mt-2 gap-1">
-        {item.tags.map((tag) => (
+        {plan.tags.map((tag) => (
           <span
             key={tag}
             className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded"
@@ -25,12 +32,12 @@ const PlanCard = ({ item }) => {
       </div>
 
       <p className="text-xs text-gray-500 mt-2">
-        Created at: {item.createdAt}
+        Created at: {plan.createdAt}
       </p>
 
       <button
         className="mt-auto self-end bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700 text-sm"
-        onClick={() => handleViewOnClick(item._id)}
+        onClick={() => handleViewOnClick(plan._id)}
       >
         View / Edit
       </button>
@@ -38,10 +45,16 @@ const PlanCard = ({ item }) => {
   );
 };
 
-const PlanList = ({ plans, searchTerm, onSearchChange }) => {
+const HistoryPlans = ({ plans, deletePlan }) => {
+  const [searchText, setSearchTerm] = useState("");
+
+  const filteredPlans = useMemo(() => {
+    return plans.filter(plan => plan.searchText.includes(searchText.toLowerCase()));
+  }, [searchText, plans]);
+
   return (
     <div className="bg-white rounded-xl shadow p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex plans-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-green-700">
           History Plans
         </h2>
@@ -50,8 +63,8 @@ const PlanList = ({ plans, searchTerm, onSearchChange }) => {
           <input
             type="search"
             placeholder="Search plans..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
+            value={searchText}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border rounded-lg"
           />
           <IoSearchOutline className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -59,18 +72,22 @@ const PlanList = ({ plans, searchTerm, onSearchChange }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {plans.map((plan) => (
-          <PlanCard key={plan._id} item={plan} />
+        {filteredPlans.map((plan) => (
+          <PlanCard
+            key={plan._id}
+            plan={plan}
+            deletePlan={deletePlan}
+          />
         ))}
       </div>
 
-      {plans.length === 0 && (
+      {filteredPlans.length === 0 && (
         <p className="text-gray-500 py-10">
-          No plan found.
+          No plans found.
         </p>
       )}
     </div>
   );
 };
 
-export default PlanList;
+export default HistoryPlans;

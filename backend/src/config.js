@@ -19,32 +19,29 @@ You are an experienced home cooking expert and nutritionist. Please provide suit
 3. The output should be a JSON string containing a list of recipe objects. These recipe objects must strictly adhere to the following database fields (imageUrl can be empty):
 const IngredientSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true },
-    amount: { type: String, default: "" }, // e.g., "2 tbsp", "150 g"
-    note: { type: String, default: "" },
-  },
-  { _id: false }
+    name: { type: String, required: true },
+    amount: { type: String }, // e.g., "2 tbsp", "150 g"
+    note: { type: String },
+  }
 );
 const StepSchema = new mongoose.Schema(
   {
     order: { type: Number, required: true },
-    text: { type: String, required: true, trim: true },
-    durationMin: { type: Number, default: null }, // optional time hint per step
-  },
-  { _id: false }
+    text: { type: String, required: true },
+    durationMin: { type: Number }, // optional time hint per step
+  }
 );
 const RecipeSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true, trim: true },
-    description: { type: String, default: "" },
-    imageUrl: { type: String, default: "" },
-    servings: { type: Number, default: 1 },
-    totalTimeMin: { type: Number, default: 0 },
-    tags: { type: [String], default: [] },
-    sourceType: { type: String, enum: ["manual", "ai", "plan"], default: "ai" },
-    sourceId: { type: String, default: null }, // e.g., planning id or external id
-    ingredients: { type: [IngredientSchema], default: [] },
-    steps: { type: [StepSchema], default: [] },
+    title: { type: String, required: true },
+    description: { type: String },
+    imageUrl: { type: String },
+    servings: { type: Number },
+    totalTimeMin: { type: Number },
+    tags: { type: [String] },
+    sourceType: { type: String, enum: ["manual", "ai", "plan"] },
+    ingredients: { type: [IngredientSchema] },
+    steps: { type: [StepSchema] },
   }
 );
 const Recipe = mongoose.model("Recipe", RecipeSchema);

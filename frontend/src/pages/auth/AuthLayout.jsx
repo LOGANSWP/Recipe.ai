@@ -1,4 +1,4 @@
-import { ConfigProvider } from "antd";
+
 
 const AuthLayout = ({ children }) => {
   return (
@@ -8,11 +8,7 @@ const AuthLayout = ({ children }) => {
       <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
 
       <div className="relative z-10 flex flex-col items-center">
-        <ConfigProvider
-          theme={{ token: { colorPrimary: "#4CA154" } }}
-        >
-          {children}
-        </ConfigProvider>
+        {children}
       </div>
     </main>
   );

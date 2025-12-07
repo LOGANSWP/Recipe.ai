@@ -112,7 +112,9 @@ const Register = () => {
           <div className="text-center">
             <Space>
               Already have an account?
-              <Link to="/login">Login</Link>
+              <Link to="/login" className="underline">
+                Go to Login
+              </Link>
             </Space>
           </div>
         </Form>

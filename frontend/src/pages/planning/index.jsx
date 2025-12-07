@@ -1,47 +1,54 @@
-import {
-  useEffect,
-  useState,
-  useMemo,
-} from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Space, notification } from "antd";
+import { Space, notification, message } from "antd";
+import dayjs from "dayjs";
 
 import AIRecommendation from "./AIRecommendation";
-import CreatePlanForm from "./CreatePlanForm";
-import PlanList from "./PlanList";
-import { getPlanList, postCreatePlan } from "../../api/planningApi";
+import CreateNewPlan from "./CreateNewPlan";
+import HistoryPlans from "./HistoryPlans";
+import { getPlanList, getPromptList, postCreatePlan, postDeletePlan } from "../../api/planningApi";
 
 const Planning = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [plans, setPlans] = useState([]);
+  const [prompts, setPrompts] = useState([]);
 
   const [notificationApi, contextHolder] = notification.useNotification();
+  const openNotification = (type, title, description) => {
+    notificationApi[type]({
+      title,
+      description,
+    });
+  };
 
   useEffect(() => {
     fetchPlanList();
+    fetchPromptList();
   }, []);
-
-  const filteredPlans = useMemo(() => {
-    return plans.filter((plan) => {
-      const text = `${plan.title} ${plan.tags.join(" ")}`
-      return text.toLowerCase().includes(searchTerm.toLowerCase());
-    });
-  }, [searchTerm, plans]);
 
   const fetchPlanList = async () => {
     try {
       const res = await getPlanList();
+      res.data.forEach(plan => {
+        plan.searchText = `${plan.title} ${plan.tags.join(" ")}`;
+        plan.truncatedTitle = plan.title.length > 50 ? `${plan.title.slice(0, 47)}...` : plan.title;
+        plan.createdAt = dayjs(plan.createdAt).format("YYYY-MM-DD hh:mm:ss");
+      });
       setPlans(res.data);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const openNotification = (type, title, description) => {
-    notificationApi[type]({
-      title,
-      description,
-    });
+  const fetchPromptList = async () => {
+    try {
+      const res = await getPromptList();
+      res.data.forEach(prompt => {
+        prompt.truncatedText = prompt.text.length > 30 ? `${prompt.text.slice(0, 27)}...` : prompt.text;
+      });
+      setPrompts(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const createPlan = async (plan) => {
@@ -53,7 +60,7 @@ const Planning = () => {
           "We can not create a plan now!",
           <Space vertical>
             {res.message}
-            <Link to="/inventory">
+            <Link to="/inventory" className="underline">
               Go to Inventory
             </Link>
           </Space>
@@ -62,7 +69,7 @@ const Planning = () => {
         openNotification(
           "success",
           "We are generating recipes for you!",
-          <Link to={`/planning/plan?id=${res.data._id}`}>
+          <Link to={`/planning/plan?id=${res.data._id}`} className="underline">
             Go to Plan Detail
           </Link>
         );
@@ -73,14 +80,31 @@ const Planning = () => {
     fetchPlanList();
   };
 
-  const handleGeneratePlan = (payload) => {
+  const deletePlan = async (planId) => {
+    try {
+      await postDeletePlan({ id: planId });
+      message.success("Delete plan success")
+    } catch (err) {
+      console.error(err);
+    }
+    fetchPlanList();
+  };
+
+  const handleCreatePlan = (payload) => {
     const newPlan = {
       ...payload,
       title: payload.prompt || "AI Generated Plan",
-      tags: [payload.mealType, `${payload.peopleNums} people`],
+      tags: [
+        `${payload.timeLimit} minutes`,
+        payload.mealType,
+        `${payload.peopleNums} people`,
+      ],
     };
-
     createPlan(newPlan);
+  };
+
+  const handleDeletePlan = (planId) => {
+    deletePlan(planId);
   };
 
   return (
@@ -102,15 +126,11 @@ const Planning = () => {
           </div>
 
           <div className="lg:col-span-2 h-full">
-            <CreatePlanForm onGenerate={handleGeneratePlan} />
+            <CreateNewPlan prompts={prompts} createPlan={handleCreatePlan} />
           </div>
         </div>
 
-        <PlanList
-          plans={filteredPlans}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-        />
+        <HistoryPlans plans={plans} deletePlan={handleDeletePlan} />
       </div>
     </main>
   );

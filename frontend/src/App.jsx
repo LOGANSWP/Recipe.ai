@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ConfigProvider } from "antd";
 
 import Header from "./components/Header";
 import Home from "./pages/Home";
@@ -19,44 +20,48 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Header />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          } />
-          <Route path="/cook" element={
-            <ProtectedRoute>
-              <Cook />
-            </ProtectedRoute>
-          } />
-          <Route path="/inventory" element={
-            <ProtectedRoute>
-              <Inventory />
-            </ProtectedRoute>
-          } />
-          <Route path="/planning" element={
-            <ProtectedRoute>
-              <Planning />
-            </ProtectedRoute>
-          } />
-          <Route path="/planning/plan" element={
-            <ProtectedRoute>
-              <PlanDisp />
-            </ProtectedRoute>
-          } />
+    <ConfigProvider
+      theme={{ token: { colorPrimary: "#4CA154" } }}
+    >
+      <AuthProvider>
+        <BrowserRouter>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/cook" element={
+              <ProtectedRoute>
+                <Cook />
+              </ProtectedRoute>
+            } />
+            <Route path="/inventory" element={
+              <ProtectedRoute>
+                <Inventory />
+              </ProtectedRoute>
+            } />
+            <Route path="/planning" element={
+              <ProtectedRoute>
+                <Planning />
+              </ProtectedRoute>
+            } />
+            <Route path="/planning/plan" element={
+              <ProtectedRoute>
+                <PlanDisp />
+              </ProtectedRoute>
+            } />
 
-          <Route path="/unauthorized" element={<Page401 />} />
-          <Route path="/forbidden" element={<Page403 />} />
-          <Route path="*" element={<Page404 />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+            <Route path="/unauthorized" element={<Page401 />} />
+            <Route path="/forbidden" element={<Page403 />} />
+            <Route path="*" element={<Page404 />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ConfigProvider>
   );
 };
