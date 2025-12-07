@@ -239,15 +239,6 @@ export default function Inventory() {
 
                   {/* Right: Buttons grouped */}
                   <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
-                    {/* Scan Receipt Button */}
-                    <button
-                      className="flex items-center justify-center bg-orange-600 text-white px-4 py-2 rounded-lg
-                   font-medium shadow-md hover:bg-orange-700 transition-colors
-                   focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-                    >
-                      <LuScanText className="h-5 w-5 mr-2" />
-                      Scan Receipt
-                    </button>
 
                     {/* Add Ingredient Button */}
                     <button

@@ -64,9 +64,6 @@ export default function Header() {
           <Link to="/">
             <li className={`hidden sm:inline ${linkStyles}`}>Home</li>
           </Link>
-          <Link to="/about">
-            <li className={`hidden sm:inline ${linkStyles}`}>About</li>
-          </Link>
           <Link to="/inventory">
             <li className={`hidden sm:inline ${linkStyles}`}>Inventory</li>
           </Link>
