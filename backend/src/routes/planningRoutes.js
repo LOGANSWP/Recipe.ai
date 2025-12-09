@@ -4,6 +4,7 @@ import {
   getPlanList,
   postCreatePlan,
   getRecommendationList,
+  getRecommendationListRandom,
   getPromptList,
   getPlan,
   getPlanDetail,
@@ -17,6 +18,7 @@ const planningRouter = express.Router();
 planningRouter.get("/plan/list", requireAuth(), getPlanList);
 planningRouter.post("/create/plan", requireAuth(), postCreatePlan);
 planningRouter.get("/recommendation/list", requireAuth(), getRecommendationList);
+planningRouter.get("/recommendation/list/random", requireAuth(), getRecommendationListRandom);
 planningRouter.get("/prompt/list", requireAuth(), getPromptList);
 
 // update plan could be complicated, it's better to delete the old one and then create a new one
