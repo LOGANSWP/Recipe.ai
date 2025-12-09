@@ -14,6 +14,10 @@ const getRecommendationList = () => {
   return api.get(`/planning/recommendation/list`);
 };
 
+const getRecommendationListRandom = (size) => {
+  return api.get(`/planning/recommendation/list/random?size=${size}`);
+};
+
 const getPromptList = () => {
   return api.get(`/planning/prompt/list`);
 };
@@ -38,6 +42,7 @@ export {
   getPlanList,
   postCreatePlan,
   getRecommendationList,
+  getRecommendationListRandom,
   getPromptList,
   getPlan,
   getPlanDetail,

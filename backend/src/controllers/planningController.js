@@ -42,7 +42,7 @@ const postCreatePlan = async (req, res) => {
     session = await mongoose.startSession();
     session.startTransaction();
 
-    const createdPlan = await Plan.create({
+    const newPlan = {
       userId: user._id,
       title,
       tags,
@@ -50,7 +50,8 @@ const postCreatePlan = async (req, res) => {
       mealType,
       peopleNums,
       timeLimitMinutes,
-    });
+    };
+    const [createdPlan] = await Plan.create([newPlan], { session });
 
     if (prompt) {
       const existingPrompt = await Prompt.findOne({ userId: user._id, text: prompt });
@@ -156,7 +157,7 @@ const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
           recipe.userId = user._id;
           recipe.planId = plan._id;
         });
-        await Recipe.create(recipes, { session });
+        await Recipe.create(recipes, { session, ordered: true });
         await Plan.findByIdAndUpdate(
           plan._id,
           { status: "success" },
@@ -217,7 +218,15 @@ const createRecipesByLLM = async (user, plan, ingredients, kitchenwares) => {
 
 const getRecommendationList = async (req, res) => {
   const recommendationList = await Recommendation.find({}).sort({ score: -1 });
-  return success(res, "get recommendation List success", recommendationList);
+  return success(res, "get recommendation list success", recommendationList);
+};
+
+const getRecommendationListRandom = async (req, res) => {
+  const { size } = req.query;
+  const sizeNumber = Number(size);
+
+  const randomRecommendationList = await Recommendation.aggregate([{ $sample: { size: sizeNumber } }]).sort({ score: -1 });
+  return success(res, "get recommendation list random success", randomRecommendationList);
 };
 
 const getPromptList = async (req, res) => {
@@ -336,6 +345,7 @@ export {
   getPlanList,
   postCreatePlan,
   getRecommendationList,
+  getRecommendationListRandom,
   getPromptList,
   getPlan,
   getPlanDetail,

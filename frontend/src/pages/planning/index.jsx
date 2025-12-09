@@ -95,7 +95,7 @@ const Planning = () => {
       ...payload,
       title: payload.prompt || "AI Generated Plan",
       tags: [
-        `${payload.timeLimit} minutes`,
+        `${payload.timeLimitMinutes} minutes`,
         payload.mealType,
         `${payload.peopleNums} people`,
       ],

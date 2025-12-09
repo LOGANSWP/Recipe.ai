@@ -56,10 +56,9 @@ Once started, the frontend and backend will be connected in development mode.
 
 ---
 
-## 2. API Development Workflow (Example: `getMyUser`)
+## 2. API Development Workflow
 
-This section describes how to add a new API using `getMyUser` as a conceptual example.
-Example purpose: Fetch the current logged-in user's profile.
+This section describes how to add a new API.
 
 ### Step 1: Define the MongoDB Schema (if needed)
 
@@ -98,12 +97,12 @@ Example purpose: Fetch the current logged-in user's profile.
 
 ***Important: You do not need to use `try ... catch ...` in controller function, since global error handler has been injected***
 
-***Important: For routers that use `requireAuth(...)` middleware, you can directly access current User from the request object (instead of database): `const { user } = req;`***
+***Important: For routers that use `requireAuth(...)` middleware, you can directly access current User from the request object (instead of database): `const { user } = req;` or `const userId = req.user._id;`***
 
-***Important: For controllers that modify User objects, make sure to update User cache using `setUserCache(...)`***
+***Important: For controllers that modify User objects, make sure to update/clear User cache using `setUserCache(...)`/`clearUserCache(...)`***
 
 - Add the corresponding logic to:
-  - `src/controllers/userController.js`
+  - `src/controllers/`
 - Responsibilities:
   - Read `userId` from authentication middleware.
   - Query user info from MongoDB.
@@ -114,7 +113,7 @@ Example purpose: Fetch the current logged-in user's profile.
 ### Step 5: Frontend API Wrapper
 
 - Add request method in:
-  - `src/api/userApi.js`
+  - `src/api/`
 - Use the centralized Axios instance from:
   - `src/api/index.js`
 - This ensures:
@@ -142,100 +141,35 @@ Example purpose: Fetch the current logged-in user's profile.
 
 - **package.json / package-lock.json**  
   Dependency management and backend scripts.
-
 - **src/**
-  - **auth/**  
-    Authentication-related configuration and utilities.  
-    - `firebase.js`: Firebase Admin SDK initialization.  
-    - `userCache.js`: Simple in-memory cache for user data.  
-    - `*.json`: Firebase service account key.
-  
-  - **celebrate/**  
-    Joi/Celebrate request validation rules.  
-    - `authPattern.js`: Validation rules for authentication.
-
-  - **config.js**  
-    Centralized backend configuration (DB, env, etc).
-
-  - **controllers/**  
-    Business logic layer.  
-    - `authController.js`: Register, login, logout logic.  
-    - `inventoryController.js`: Inventory-related logic.  
-    - `userController.js`: User-related logic (e.g., profile).
-
-  - **index.js**  
-    Backend application entry point.
-
-  - **middleware/**  
-    Global middleware.  
-    - `requireAuth.js`: Authentication & permission middleware.  
+  - **auth/** Authentication-related configuration and utilities.
+  - **celebrate/** Joi/Celebrate request validation rules.
+  - **config.js** Centralized backend configuration (DB, env, etc).
+  - **controllers/** Business logic layer.
+  - **index.js** Backend application entry point.
+  - **middleware/** Global middleware.
+    - `requireAuth.js`: Authentication & permission middleware.
     - `errorHandler.js`: Unified error handling.
-
-  - **models/**  
-    MongoDB Mongoose models.  
-    - `user.js`: User schema.  
-    - `Ingredient.js`: Ingredient schema.  
-    - `Kitchenware.js`: Kitchenware schema.
-
-  - **routes/**  
-    API route definitions.  
-    - `authRoutes.js`: Authentication routes.  
-    - `inventoryRoutes.js`: Inventory routes.  
-    - `userRoutes.js`: User routes.
+  - **models/** MongoDB Mongoose models.
+  - **routes/** API route definitions.
 
 ---
 
 ### Frontend (`Recipe.ai/frontend`)
 
-- **package.json / package-lock.json**  
-  Frontend dependencies and scripts.
-
-- **index.html**  
-  Main HTML entry.
-
+- **package.json / package-lock.json** Frontend dependencies and scripts.
+- **index.html** Main HTML entry.
 - **src/**
-  - **api/**  
-    Axios API wrappers.  
-    - `index.js`: Axios instance, interceptors, global error handling.  
-    - `authApi.js`: Auth-related requests.  
-    - `userApi.js`: User-related requests.
-
-  - **assets/**  
-    Static assets and frontend config.  
-    - `config.js`: Frontend environment configuration.  
-    - Images and static media.
-
-  - **auth/**  
-    Authentication state management.  
-    - `firebase.js`: Firebase client initialization.  
-    - `AuthContent.jsx`: Global auth context provider.  
-    - `ProtectedRoute.jsx`: Route guard based on login & role.
-
-  - **components/**  
-    Reusable UI components.  
-    - `Header.jsx`: Navigation header.  
-    - `DetailedCard.jsx`, `InventoryItemCard.jsx`: Core UI cards.
-
-  - **pages/**  
-    Application pages.  
-    - `auth/`: Login and Register pages.  
-    - `Home.jsx`: Homepage.  
-    - `Inventory.jsx`: Inventory management.  
-    - `Cook.jsx`: Cooking page.  
-    - `planning/`: AI planning related pages.  
-    - `Profile.jsx`: User profile page.
-
-  - **App.jsx**  
-    Main router and layout container.
-
-  - **main.jsx**  
-    Application entry point.
-
-  - **index.css / tailwind.config.js / postcss.config.js**  
-    Global styles and Tailwind CSS configuration.
-
-- **vite.config.js**  
-  Vite build and dev server configuration.
+  - **api/** Axios API wrappers.
+    - `index.js`: Axios instance, interceptors, global error handling.
+  - **assets/** Static assets and frontend config.
+  - **auth/** Authentication state management.
+  - **components/** Reusable UI components.
+  - **pages/** Application pages.
+  - **App.jsx** Main router and layout container.
+  - **main.jsx** Application entry point.
+  - **index.css / tailwind.config.js / postcss.config.js** Global styles and Tailwind CSS configuration.
+- **vite.config.js** Vite build and dev server configuration.
 
 ---
 
