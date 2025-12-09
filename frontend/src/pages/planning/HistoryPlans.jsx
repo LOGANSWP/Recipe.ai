@@ -4,7 +4,7 @@ import { IoSearchOutline, IoPlayOutline, IoRefreshCircleOutline } from "react-ic
 import { useNavigate } from "react-router-dom";
 import { Space } from "antd";
 
-const PlanCard = ({ plan, deletePlan }) => {
+const PlanCard = ({ plan, deletePlan, rerunPlan }) => {
   const navigate = useNavigate();
 
   const handleViewOnClick = (planId) => {
@@ -20,7 +20,7 @@ const PlanCard = ({ plan, deletePlan }) => {
         <AiOutlineDelete className="hover:text-red-700" onClick={() => deletePlan(plan._id)} />
 
         {plan.status === "fail" && (
-          <IoRefreshCircleOutline className="hover:text-green-700" onClick={() => deletePlan(plan._id)} />
+          <IoRefreshCircleOutline className="hover:text-green-700" onClick={() => rerunPlan(plan._id)} />
         )}
 
         {plan.status === "waiting" && (
@@ -53,7 +53,7 @@ const PlanCard = ({ plan, deletePlan }) => {
   );
 };
 
-const HistoryPlans = ({ plans, deletePlan }) => {
+const HistoryPlans = ({ plans, deletePlan, rerunPlan }) => {
   const [searchText, setSearchTerm] = useState("");
 
   const filteredPlans = useMemo(() => {
@@ -85,6 +85,7 @@ const HistoryPlans = ({ plans, deletePlan }) => {
             key={plan._id}
             plan={plan}
             deletePlan={deletePlan}
+            rerunPlan={rerunPlan}
           />
         ))}
       </div>

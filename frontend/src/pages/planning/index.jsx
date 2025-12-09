@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import AIRecommendation from "./AIRecommendation";
 import CreateNewPlan from "./CreateNewPlan";
 import HistoryPlans from "./HistoryPlans";
-import { getPlanList, getPromptList, postCreatePlan, postDeletePlan } from "../../api/planningApi";
+import { getPlanList, getPromptList, postCreatePlan, postDeletePlan, postRerunPlan } from "../../api/planningApi";
 
 const Planning = () => {
   const [plans, setPlans] = useState([]);
@@ -90,6 +90,35 @@ const Planning = () => {
     fetchPlanList();
   };
 
+  const rerunPlan = async (planId) => {
+    try {
+      const res = await postRerunPlan({ id: planId });
+      if (res.data === null) {
+        openNotification(
+          "error",
+          "We can not rerun the plan now!",
+          <Space vertical>
+            {res.message}
+            <Link to="/inventory" className="underline">
+              Go to Inventory
+            </Link>
+          </Space>
+        );
+      } else {
+        openNotification(
+          "success",
+          "We are rerunning the plan for you!",
+          <Link to={`/planning/plan?id=${res.data._id}`} className="underline">
+            Go to Plan Detail
+          </Link>
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    fetchPlanList();
+  };
+
   const handleCreatePlan = (payload) => {
     const newPlan = {
       ...payload,
@@ -105,6 +134,10 @@ const Planning = () => {
 
   const handleDeletePlan = (planId) => {
     deletePlan(planId);
+  };
+
+  const handleRerunPlan = (planId) => {
+    rerunPlan(planId);
   };
 
   return (
@@ -130,7 +163,7 @@ const Planning = () => {
           </div>
         </div>
 
-        <HistoryPlans plans={plans} deletePlan={handleDeletePlan} />
+        <HistoryPlans plans={plans} deletePlan={handleDeletePlan} rerunPlan={handleRerunPlan} />
       </div>
     </main>
   );
