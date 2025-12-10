@@ -128,7 +128,7 @@ export default function Cook() {
   const ingredients = recipe?.ingredients || [];
 
   return (
-    <main className="relative bg-gray-50 min-h-[calc(100vh-80px)] overflow-hidden">
+    <main className="relative bg-gray-50 min-h-[calc(100vh-64px)] overflow-hidden">
       {/* Background elements */}
       <div className="absolute -top-20 -left-20 w-72 h-72 bg-yellow-200 rounded-full opacity-50 blur-3xl -z-0" />
       <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-200 rounded-full opacity-50 blur-3xl -z-0" />
@@ -138,7 +138,7 @@ export default function Cook() {
         {/* Header Layout */}
         <div className="max-w-5xl mx-auto px-4 flex items-center gap-3 py-2"> 
           <button
-            onClick={() => nav("/planning")}
+            onClick={() => nav(-1)}
             className="px-1 py-1 hover:bg-gray-50 flex items-center gap-2 flex-shrink-0"
           >
               <FaArrowLeft />
