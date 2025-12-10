@@ -1,0 +1,15 @@
+{
+  "name": "recipe-ai-deploy",
+  "version": "1.0.0",
+  "scripts": {
+    "install-client": "cd frontend && npm install",
+    "install-server": "cd backend && npm install",
+    "install-all": "npm run install-client && npm run install-server",
+    "build-client": "cd frontend && npm run build",
+    "deploy": "npm run install-all && npm run build-client && cd backend && npm start",
+    "start": "cd backend && node src/index.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
