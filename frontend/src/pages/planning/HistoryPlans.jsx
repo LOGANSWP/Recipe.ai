@@ -64,7 +64,7 @@ const HistoryPlans = ({ plans, deletePlan, rerunPlan }) => {
     <div className="bg-white rounded-xl shadow p-6">
       <div className="flex plans-center justify-between mb-6">
         <h2 className="text-2xl font-semibold text-green-700">
-          History Plans
+          History Meals
         </h2>
 
         <div className="relative w-64">

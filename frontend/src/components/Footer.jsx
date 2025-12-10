@@ -30,7 +30,7 @@ export default function Footer() {
           }`}
         >
           <FaCalendarAlt className="text-2xl mb-1" />
-          <span className="text-xs font-medium">Planning</span>
+          <span className="text-xs font-medium">Recipes</span>
         </Link>
         
         <Link 

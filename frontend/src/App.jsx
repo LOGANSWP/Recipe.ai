@@ -1,8 +1,7 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ConfigProvider } from "antd";
 
 import Footer from "./components/Footer";
-import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Cook from "./pages/Cook";
 import Inventory from "./pages/Inventory";
@@ -25,8 +24,9 @@ export default function App() {
     >
       <AuthProvider>
         <BrowserRouter>
+          <div className="pb-16">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Navigate to="/planning" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={
@@ -58,7 +58,7 @@ export default function App() {
             <Route path="/unauthorized" element={<Page401 />} />
             <Route path="/forbidden" element={<Page403 />} />
             <Route path="*" element={<Page404 />} />
-          </Routes>
+          </Routes></div>
           <Footer />
         </BrowserRouter>
       </AuthProvider>

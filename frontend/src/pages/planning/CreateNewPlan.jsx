@@ -89,7 +89,7 @@ const CreateNewPlan = ({ prompts, createPlan }) => {
   return (
     <div className="bg-white rounded-xl shadow p-6 flex flex-col gap-6 h-full">
       <h2 className="text-2xl font-semibold text-green-700">
-        Create New Plan
+        Create Your Meal
       </h2>
 
       <div className="flex flex-wrap gap-4">
