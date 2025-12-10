@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { FaUser, FaKey, FaEdit, FaSave, FaTimes, FaCamera, FaLock } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaUser, FaKey, FaEdit, FaSave, FaTimes, FaCamera, FaLock, FaSignOutAlt } from "react-icons/fa";
 import { MdLightbulb } from "react-icons/md";
 import { message } from "antd";
 import { getMyUser, updateMyProfile, changePassword } from "../api/userApi";
+import { logout } from "../api/authApi";
 import { useAuth } from "../auth/AuthContent";
 import AvatarSelector from "../components/AvatarSelector";
 import { getDefaultAvatar } from "../assets/avatars";
@@ -11,6 +13,7 @@ import auth from "../auth/firebase";
 
 export default function Profile() {
   const { updateUserData } = useAuth();
+  const navigate = useNavigate();
   // Profile state
   const [profile, setProfile] = useState({
     name: "",
@@ -23,6 +26,17 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      message.success("Logout success");
+      navigate("/");
+    } catch (err) {
+      console.log(err);
+      message.error("Logout failed");
+    }
+  };
 
   // Load user data on component mount
   useEffect(() => {
@@ -689,6 +703,17 @@ export default function Profile() {
               </>
             )}
           </div>
+        </section>
+
+        {/* Sign Out Section */}
+        <section className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-white hover:bg-red-600 border border-red-600 px-6 py-3 rounded-xl transition-all duration-200 font-semibold text-lg"
+          >
+            <FaSignOutAlt />
+            Sign Out
+          </button>
         </section>
         </>
         )}

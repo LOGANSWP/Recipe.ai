@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ConfigProvider } from "antd";
 
-import Header from "./components/Header";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 import Cook from "./pages/Cook";
@@ -25,7 +25,6 @@ export default function App() {
     >
       <AuthProvider>
         <BrowserRouter>
-          <Header />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -60,6 +59,7 @@ export default function App() {
             <Route path="/forbidden" element={<Page403 />} />
             <Route path="*" element={<Page404 />} />
           </Routes>
+          <Footer />
         </BrowserRouter>
       </AuthProvider>
     </ConfigProvider>
