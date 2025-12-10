@@ -29,13 +29,13 @@ const postCreatePlan = async (req, res) => {
     userId: user._id,
     expirationDate: { $gt: now },
   });
-  if (availableIngredients.length === 0) {
-    return success(res, "It appears there are no available ingredients. Please go to the inventory page to add some.");
-  }
+  // if (availableIngredients.length === 0) {
+  //   return success(res, "It appears there are no available ingredients. Please go to the inventory page to add some.");
+  // }
   const availableKitchenwares = await Kitchenware.find({ userId: user._id });
-  if (availableKitchenwares.length === 0) {
-    return success(res, "It appears there are no available kitchenware. Please go to the inventory page to add some.");
-  }
+  // if (availableKitchenwares.length === 0) {
+  //   return success(res, "It appears there are no available kitchenware. Please go to the inventory page to add some.");
+  // }
 
   let session = null;
   try {

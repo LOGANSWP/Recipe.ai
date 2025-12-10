@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { FaUser, FaKey, FaEdit, FaSave, FaTimes, FaCamera, FaLock } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaUser, FaKey, FaEdit, FaSave, FaTimes, FaCamera, FaLock, FaSignOutAlt } from "react-icons/fa";
 import { MdLightbulb } from "react-icons/md";
 import { message } from "antd";
 import { getMyUser, updateMyProfile, changePassword } from "../api/userApi";
+import { logout } from "../api/authApi";
 import { useAuth } from "../auth/AuthContent";
 import AvatarSelector from "../components/AvatarSelector";
 import { getDefaultAvatar } from "../assets/avatars";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import auth from "../auth/firebase";
+import ProfileHeader from "../components/ProfileHeader";
 
 export default function Profile() {
   const { updateUserData } = useAuth();
+  const navigate = useNavigate();
   // Profile state
   const [profile, setProfile] = useState({
     name: "",
@@ -23,6 +27,17 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      message.success("Logout success");
+      navigate("/");
+    } catch (err) {
+      console.log(err);
+      message.error("Logout failed");
+    }
+  };
 
   // Load user data on component mount
   useEffect(() => {
@@ -299,20 +314,17 @@ export default function Profile() {
   };
 
   return (
-    <main className="relative bg-gray-50 min-h-[calc(100vh-80px)] p-6 overflow-hidden">
-      {/* Decorative background shapes */}
-      <div className="absolute -top-20 -left-20 w-72 h-72 bg-yellow-200 rounded-full opacity-50 blur-3xl -z-0" />
-      <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-200 rounded-full opacity-50 blur-3xl -z-0" />
-      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
+    <>
+      <ProfileHeader />
+      <main className="relative bg-gray-50 min-h-screen p-6 overflow-hidden">
+        {/* Decorative background shapes */}
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-yellow-200 rounded-full opacity-50 blur-3xl -z-0" />
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-200 rounded-full opacity-50 blur-3xl -z-0" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
 
-      {/* Main content */}
-      <div className="relative z-10 max-w-4xl mx-auto">
-        {/* Page Title */}
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-8">
-          Profile Settings
-        </h1>
-
-        {/* Loading State */}
+        {/* Main content */}
+        <div className="relative z-10 max-w-4xl mx-auto">
+          {/* Loading State */}
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent"></div>
@@ -690,6 +702,17 @@ export default function Profile() {
             )}
           </div>
         </section>
+
+        {/* Sign Out Section */}
+        <section className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-200">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-white hover:bg-red-600 border border-red-600 px-6 py-3 rounded-xl transition-all duration-200 font-semibold text-lg"
+          >
+            <FaSignOutAlt />
+            Sign Out
+          </button>
+        </section>
         </>
         )}
       </div>
@@ -702,7 +725,8 @@ export default function Profile() {
           onClose={() => setShowAvatarSelector(false)}
         />
       )}
-    </main>
+      </main>
+    </>
   );
 }
 

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Space, notification, message } from "antd";
 import dayjs from "dayjs";
 
+import PlanningHeader from "../../components/PlanningHeader";
 import AIRecommendation from "./AIRecommendation";
 import CreateNewPlan from "./CreateNewPlan";
 import HistoryPlans from "./HistoryPlans";
@@ -141,31 +142,30 @@ const Planning = () => {
   };
 
   return (
-    <main className="relative bg-gray-50  min-h-[calc(100vh-80px)] p-4 md:p-8 overflow-hidden">
-      <div className="absolute -top-20 -left-20 w-72 h-72 bg-yellow-200 rounded-full opacity-50 blur-3xl -z-0" />
-      <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-200 rounded-full opacity-50 blur-3xl -z-0" />
-      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
+    <>
+      <PlanningHeader />
+      <main className="relative bg-gray-50 min-h-screen p-4 md:p-8 overflow-hidden">
+        <div className="absolute -top-20 -left-20 w-72 h-72 bg-yellow-200 rounded-full opacity-50 blur-3xl -z-0" />
+        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-orange-200 rounded-full opacity-50 blur-3xl -z-0" />
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-green-200 rounded-full opacity-30 blur-3xl -translate-x-1/2 -translate-y-1/2 -z-0" />
 
-      <div className="sticky max-w-7xl mx-auto flex flex-col gap-10 top-0 z-30">
-        {contextHolder}
+        <div className="max-w-7xl mx-auto flex flex-col gap-10 relative z-30">
+          {contextHolder}
 
-        <h1 className="text-4xl font-bold text-gray-800">
-          Planning
-        </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+            <div className="lg:col-span-1 h-full">
+              <AIRecommendation />
+            </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-          <div className="lg:col-span-1 h-full">
-            <AIRecommendation />
+            <div className="lg:col-span-2 h-full">
+              <CreateNewPlan prompts={prompts} createPlan={handleCreatePlan} />
+            </div>
           </div>
 
-          <div className="lg:col-span-2 h-full">
-            <CreateNewPlan prompts={prompts} createPlan={handleCreatePlan} />
-          </div>
+          <HistoryPlans plans={plans} deletePlan={handleDeletePlan} rerunPlan={handleRerunPlan} />
         </div>
-
-        <HistoryPlans plans={plans} deletePlan={handleDeletePlan} rerunPlan={handleRerunPlan} />
-      </div>
-    </main>
+      </main>
+    </>
   );
 };
 
