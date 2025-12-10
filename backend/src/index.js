@@ -65,7 +65,7 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(staticPath));
 
   // Serve index.html for any unknown routes (SPA support)
-  app.get('*', (req, res) => {
+  app.get(/(.*)/, (req, res) => {
     res.sendFile(path.resolve(staticPath, 'index.html'));
   });
 } else {
