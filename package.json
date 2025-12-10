@@ -2,7 +2,7 @@
   "name": "recipe-ai-deploy",
   "version": "1.0.0",
   "scripts": {
-    "install-client": "cd frontend && npm install",
+    "install-client": "cd frontend && npm install --include=dev",
     "install-server": "cd backend && npm install",
     "install-all": "npm run install-client && npm run install-server",
     "build-client": "cd frontend && npm run build",
