@@ -9,6 +9,8 @@ import {
   getPlan,
   getPlanDetail,
   postRerunPlan,
+  postEditPlan,
+  postUpdatePlan,
   postDeletePlan,
 } from "../controllers/planningController.js";
 import requireAuth from "../middleware/requireAuth.js";
@@ -25,6 +27,8 @@ planningRouter.get("/prompt/list", requireAuth(), getPromptList);
 planningRouter.get("/plan", requireAuth(), getPlan);
 planningRouter.get("/plan/detail", requireAuth(), getPlanDetail);
 planningRouter.post("/rerun/plan", requireAuth(), postRerunPlan);
+planningRouter.post("/edit/plan", requireAuth(), postEditPlan);
+planningRouter.post("/update/plan", requireAuth(), postUpdatePlan);
 planningRouter.post("/delete/plan", requireAuth(), postDeletePlan);
 
 export default planningRouter;

@@ -1,115 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FaBars, FaTrash } from 'react-icons/fa6';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, useAnimation, useMotionValue } from 'framer-motion';
-import { CSS } from "@dnd-kit/utilities";
-import { useSortable } from "@dnd-kit/sortable";
+import { Alert, Flex, Spin, Space, message } from 'antd';
+
 import PlanPageHeader from '../../components/PlanPageHeader';
 import EditPlanForm from '../../components/EditPlanForm';
-import SlideAction from '../../components/SlideAction';
 import VerticalSortableList from '../../components/VerticalSortableList';
+import PlannedDish from '../../components/PlannedDish';
 
-import { Alert, Flex, Spin, Space, message } from 'antd';
-import { getPlan, getPlanDetail, postRerunPlan } from "../../api/planningApi";
+import { getPlan, getPlanDetail, postRerunPlan, postEditPlan, postUpdatePlan } from "../../api/planningApi";
 import { RETRY_TIME } from "../../config.js";
 
 const frequentlyUsedTags = ['vegetarian', 'vegan', 'gluten-free', 'dairy-free', 'nut-free', 'spicy', 'low-carb', 'high-protein'];
-
-function Dish({ item, selected, onDelete, openDishId, setOpenDishId, ...props }) {
-  const maxWidth = 75;
-  const x = useMotionValue(0);
-  const controls = useAnimation();
-  const [dragX, setDragX] = useState(0);
-  const [lastX, setLastX] = useState(0);
-
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item._id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const handlePan = (event, info) => {
-    const newX = Math.max(-maxWidth, Math.min(0, lastX + info.offset.x));
-    x.set(newX);
-    setDragX(newX);
-  };
-
-  const setOpen = (open, { setId = false } = {}) => {
-    if (open) {
-      controls.start({ x: -maxWidth });
-      setDragX(-maxWidth);
-      setLastX(-maxWidth);
-      if (setId && openDishId !== item._id) {
-        setOpenDishId(item._id);
-      }
-    } else {
-      controls.start({ x: 0 });
-      setDragX(0);
-      setLastX(0);
-      if (setId && openDishId !== null) {
-        setOpenDishId(null);
-      }
-    }
-  }
-
-  const handlePanEnd = (event, info) => {
-    const offset = info.offset.x;
-    const velocity = info.velocity.x;
-
-    if (Math.abs(velocity) <= 50) {
-      setOpen(lastX + offset <= -maxWidth / 2, { setId: true });
-    } else {
-      setOpen(velocity < 0, { setId: true });
-    }
-  };
-
-  useEffect(() => {
-    if (lastX < 0 && openDishId !== item._id) {
-      console.log('Closing dish', item._id);
-      setOpen(false);
-    }
-  }, [openDishId]);
-
-  return (
-    <div ref={setNodeRef} style={style}>
-      <motion.div
-        className={`flex items-center relative mb-2 rounded-lg shadow-md cursor-pointer ${selected ? 'bg-green-200' : 'bg-white'}`}
-        onPan={handlePan}
-        onPanEnd={handlePanEnd}
-        style={{ x }}
-        animate={controls}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        {...props}
-      >
-        <div className="flex justify-between items-center grow my-4 ml-4">
-          <div>
-            <h3 className="font-bold">{item?.title}</h3>
-            <p className="text-sm text-gray-600">{item?.description}</p>
-          </div>
-          <p className="text-sm font-semibold">{item?.tags[0]}</p>
-        </div>
-        <div className="touch-none" ref={setActivatorNodeRef} {...attributes} {...listeners}>
-          <div className="text-gray-400 m-4">
-            <FaBars />
-          </div>
-        </div>
-        <SlideAction dragX={dragX} side="right" color="bg-red-500" maxWidth={maxWidth} onClick={onDelete}>
-          <FaTrash />
-        </SlideAction>
-      </motion.div>
-    </div>
-  );
-}
 
 const PlanDisp = () => {
   const location = useLocation();
@@ -131,6 +32,7 @@ const PlanDisp = () => {
     }
     try {
       const res = await getPlanDetail(planId);
+      message.success("Plan generated!");
       setDishes(res.data.recipes);
     } catch (err) {
       console.error(err);
@@ -139,9 +41,9 @@ const PlanDisp = () => {
 
   const rerunPlan = async () => {
     try {
-      const res = await postRerunPlan(planId);
-      setDishes(res.data.recipes);
-      message.success("Rerun plan success");
+      const res = await postRerunPlan({id: planId});
+      setPlanStatus(res.data.status);
+      message.info(res.message);
       repeatQuery();
     } catch (err) {
       console.error(err);
@@ -171,6 +73,7 @@ const PlanDisp = () => {
           timerId = setTimeout(poll, RETRY_TIME);
         } else if (status === 'success') {
           await fetchPlanDetail();
+          setEditionPrompt('');
         }
       } catch (err) {
         console.error(err);
@@ -194,20 +97,41 @@ const PlanDisp = () => {
     rerunPlan();
   };
 
-  const handleSendEdition = () => {
+  const handleSendEdition = async () => {
     console.log('Edition prompt:', editionPrompt);
-    // Here you would typically send the prompt to an AI service
-    // and get back a new plan, then update the `dishes` state.
-    setEditionPrompt('');
-  };
+    if (!editionPrompt) return;
 
-  const handleConfirmPlan = () => {
-    // Prefer the first selected dish; fall back to the first dish
-    const targetId = (selectedDishes[0]) || dishes?.[0]?._id;
-    if (!targetId) {
-      return;
+    try {
+      const res = await postEditPlan({
+        id: planId,
+        dishes: dishes,
+        prompt: editionPrompt
+      });
+      setPlanStatus(res.data.status);
+      repeatQuery();
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to send edit request");
     }
-    navigate(`/cook?id=${targetId}`);
+  };
+  const handleConfirmPlan = async () => {
+    // update the database with dishes
+    try {
+      await postUpdatePlan({
+        id: planId,
+        dishes: dishes,
+      });
+
+      let targetId = dishes?.[0]?._id;
+
+      if (!targetId) {
+        return;
+      }
+      navigate(`/cook?id=${targetId}`);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to confirm plan");
+    }
   };
 
   const handleSelect = (itemId) => {
@@ -232,7 +156,6 @@ const PlanDisp = () => {
         title="Your Meal Plan"
         onBack={() => navigate(-1)}
         isSelecting={isSelecting}
-        onLock={() => { }}
         onDelete={() => {
           setDishes((prev) => prev.filter((dish) => !selectedDishes.includes(dish._id)));
           setSelectedDishes([]);
@@ -252,7 +175,7 @@ const PlanDisp = () => {
             </Spin>
           </Flex>
         )}
-        {planStatus === "error" && (
+        {planStatus === "fail" && (
           <Flex gap="middle" vertical>
             <Alert
               type="error"
@@ -269,7 +192,7 @@ const PlanDisp = () => {
 
         <VerticalSortableList items={dishes} setItems={setDishes}>
           {dishes.map((item) => (
-            <Dish
+            <PlannedDish
               key={item._id}
               item={item}
               selected={selectedDishes.includes(item._id)}

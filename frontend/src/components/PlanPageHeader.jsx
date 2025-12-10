@@ -45,10 +45,9 @@ function DeleteButton( { onDelete } ) {
     );
 }
 
-const PlanPageHeader = ({ title, onBack, isSelecting, onLock, onDelete, onConfirm }) => {
+const PlanPageHeader = ({ title, onBack, isSelecting, onDelete, onConfirm }) => {
     var rightbar = [];
     if (isSelecting) {
-        rightbar.push(<LockButton key="lock" onLock={onLock} />);
         rightbar.push(<DeleteButton key="delete" onDelete={onDelete} />);
     }
     rightbar.push(<ConfirmButton key="confirm" onConfirm={onConfirm} />);
