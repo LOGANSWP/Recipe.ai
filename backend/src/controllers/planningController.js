@@ -10,8 +10,8 @@ import Prompt from "../models/Prompt.js";
 import Recipe from "../models/Recipe.js"
 
 import { success, createSuccess, deleteSuccess, forbidden, badRequest, internalError } from "../utils/responseTemplete.js";
-import { interactCreatePlan } from "../utils/geminiClient.js";
-import { GEMINI_RETRY_NUM, CREATE_PLAN_USER_PROMPT_TEMPLATE } from "../config.js";
+import { interactCreatePlan, interactEditPlan } from "../utils/geminiClient.js";
+import { GEMINI_RETRY_NUM, CREATE_PLAN_USER_PROMPT_TEMPLATE, EDIT_PLAN_USER_PROMPT_TEMPLATE } from "../config.js";
 
 const getPlanList = async (req, res) => {
   const { user } = req;
@@ -300,7 +300,154 @@ const postRerunPlan = async (req, res) => {
 
   createRecipesByLLM(user, updatedPlan, availableIngredients, availableKitchenwares);
 
-  return success(res, "rerun plan success", updatedPlan);
+  return success(res, "Calling LLM", updatedPlan);
+};
+
+const postEditPlan = async (req, res) => {
+  const { user } = req;
+  const { id, dishes, prompt } = req.body;
+
+  const plan = await Plan.findById(id);
+  if (!plan.userId.equals(user._id)) {
+    return forbidden(res, "You have no access to this plan");
+  }
+
+  if (plan.status === "waiting") {
+    return badRequest(res, "The plan is still running, please try again later");
+  }
+
+  const updatedPlan = await Plan.findByIdAndUpdate(
+    plan._id,
+    { status: "waiting" },
+    { new: true, runValidators: true },
+  );
+
+  editRecipesByLLM(user, updatedPlan, dishes, prompt);
+
+  return success(res, "edit plan success", updatedPlan);
+};
+
+const editRecipesByLLM = async (user, plan, dishes, prompt) => {
+  const slimDishes = dishes.map(dish => ({
+    title: dish.title,
+    description: dish.description,
+    ingredients: dish.ingredients,
+    steps: dish.steps,
+    tags: dish.tags,
+  }));
+
+  const userPrompt = util.format(EDIT_PLAN_USER_PROMPT_TEMPLATE, slimDishes, prompt);
+
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    let recipesJson = null;
+    let recipes = null;
+    let success = false;
+    for (let _ = 0; _ < GEMINI_RETRY_NUM; _++) {
+      try {
+        recipesJson = await interactEditPlan(userPrompt);
+        recipes = JSON.parse(recipesJson.replaceAll("```json", "").replaceAll("```", ""));
+
+        validateRecipes(recipes);
+        recipes.forEach(recipe => {
+          recipe.userId = user._id;
+          recipe.planId = plan._id;
+        });
+
+        await Recipe.deleteMany({ planId: plan._id }, { session });
+        await Recipe.create(recipes, { session, ordered: true });
+        await Plan.findByIdAndUpdate(
+          plan._id,
+          { status: "success" },
+          { new: true, runValidators: true, session },
+        );
+
+        const newLLMLog = {
+          userId: user._id,
+          taskName: "editRecipesByLLM",
+          userPrompt,
+          llmResponse: recipesJson,
+        };
+        await LLMLog.create([newLLMLog], { session });
+        success = true;
+      } catch (err) {
+        console.error("editRecipesByLLM", err);
+        const newLLMLogFail = {
+          userId: user._id,
+          taskName: "editRecipesByLLM",
+          userPrompt,
+          llmResponse: recipesJson,
+          errorMessage: err.message,
+        };
+        await LLMLog.create([newLLMLogFail], { session });
+      }
+
+      if (success) {
+        break;
+      }
+    }
+
+    if (!success) {
+      await Plan.findByIdAndUpdate(
+        plan._id,
+        { status: "fail" },
+        { new: true, runValidators: true, session },
+      );
+    }
+
+    await session.commitTransaction();
+  } catch (err) {
+    console.error("editRecipesByLLM", err);
+    if (session) {
+      await session.abortTransaction();
+    }
+  } finally {
+    if (session) {
+      session.endSession();
+    }
+  }
+};
+
+const postUpdatePlan = async (req, res) => {
+  const { user } = req;
+  const { id, dishes } = req.body;
+
+  const plan = await Plan.findById(id);
+  if (!plan.userId.equals(user._id)) {
+    return forbidden(res, "You have no access to this plan");
+  }
+
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    await Recipe.deleteMany({ planId: id }, { session });
+
+    const newRecipes = dishes.map((dish) => ({
+      ...dish,
+      userId: user._id,
+      planId: plan._id,
+    }));
+
+    const createdRecipes = await Recipe.insertMany(newRecipes, { session });
+
+    await session.commitTransaction();
+    return success(res, "update plan success", createdRecipes);
+  } catch (err) {
+    console.error("postUpdatePlan", err);
+    if (session) {
+      await session.abortTransaction();
+    }
+    return internalError(res);
+  } finally {
+    if (session) {
+      session.endSession();
+    }
+  }
 };
 
 const postDeletePlan = async (req, res) => {
@@ -350,5 +497,7 @@ export {
   getPlan,
   getPlanDetail,
   postRerunPlan,
+  postEditPlan,
+  postUpdatePlan,
   postDeletePlan,
 };

@@ -34,6 +34,14 @@ const postRerunPlan = (payload) => {
   return api.post(`/planning/rerun/plan`, payload);
 };
 
+const postEditPlan = (payload) => {
+  return api.post(`/planning/edit/plan`, payload);
+};
+
+const postUpdatePlan = (payload) => {
+  return api.post(`/planning/update/plan`, payload);
+};
+
 const postDeletePlan = (payload) => {
   return api.post(`/planning/delete/plan`, payload);
 };
@@ -47,5 +55,7 @@ export {
   getPlan,
   getPlanDetail,
   postRerunPlan,
+  postEditPlan,
+  postUpdatePlan,
   postDeletePlan,
 };
