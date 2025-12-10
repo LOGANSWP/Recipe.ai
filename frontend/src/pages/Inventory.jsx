@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { IoSearchOutline } from "react-icons/io5";
 import { FiPlus } from "react-icons/fi";
 import { LuScanText } from "react-icons/lu";
 import InventoryItemCard from "../components/InventoryItemCard";
+import InventoryHeader from "../components/InventoryHeader";
 import DetailedCard from "../components/DetailedCard";
 import { getDaysUntilExpiry } from "../components/InventoryItemCard";
 import { INGREDIENT_CATEGORIES } from "../assets/config.js";
@@ -12,6 +12,19 @@ import {
   addOrUpdateInventory,
   deleteInventory,
 } from "../api/inventoryApi.js";
+
+// --- Helper: Add Item Card Component ---
+const AddItemCard = ({ onClick, label }) => (
+  <button
+    onClick={onClick}
+    className="relative bg-white shadow-md rounded-lg overflow-hidden w-full h-full min-h-[11rem] flex flex-col items-center justify-center
+               transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 
+               focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-opacity-50 group"
+  >
+    <FiPlus className="h-12 w-12 mb-2 text-gray-300 group-hover:text-green-500 transition-colors" />
+    <span className="font-medium text-sm text-gray-400 group-hover:text-green-600 transition-colors">{label}</span>
+  </button>
+);
 
 // --- Helper: Map Backend Data to Frontend Format ---
 const mapBackendToFrontend = (item) => ({
@@ -170,28 +183,9 @@ export default function Inventory() {
 
   return (
     <>
+      <InventoryHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
       <main className="bg-gray-50 min-h-screen p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header Bar: Title, Search */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
-            <h1 className="text-4xl font-bold text-gray-800">My Inventory</h1>
-
-            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-              {/* Search Bar */}
-              <div className="relative w-full md:w-64">
-                <input
-                  type="search"
-                  placeholder="Search ingredients..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300
-                             focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-                <IoSearchOutline className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              </div>
-            </div>
-          </div>
-
           {/* Loading State */}
           {isLoading ? (
             <div className="text-center py-20">
@@ -239,20 +233,10 @@ export default function Inventory() {
 
                   {/* Right: Buttons grouped */}
                   <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
-
-                    {/* Add Ingredient Button */}
-                    <button
-                      onClick={() => handleAddNew("ingredient")}
-                      className="flex items-center justify-center bg-green-600 text-white px-4 py-2 rounded-lg
-                   font-medium shadow-md hover:bg-green-700 transition-colors
-                   focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                    >
-                      <FiPlus className="h-5 w-5 mr-2" />
-                      Add Ingredient
-                    </button>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  <AddItemCard onClick={() => handleAddNew("ingredient")} label="Add Ingredient" />
                   {filteredIngredients.map((item) => (
                     <InventoryItemCard
                       key={item.id}
@@ -262,13 +246,13 @@ export default function Inventory() {
                     />
                   ))}
                 </div>
-                {filteredIngredients.length === 0 && (
+                {/* {filteredIngredients.length === 0 && (
                   <div className="text-center py-10 bg-white rounded-lg shadow-sm">
                     <p className="text-gray-500">
                       No ingredients found. Try adding some!
                     </p>
                   </div>
-                )}
+                )} */}
               </section>
 
               {/* --- Kitchenware Section --- */}
@@ -277,17 +261,9 @@ export default function Inventory() {
                   <h2 className="text-2xl font-semibold text-gray-700">
                     Kitchenware
                   </h2>
-                  <button
-                    onClick={() => handleAddNew("kitchenware")}
-                    className="flex items-center justify-center bg-gray-600 text-white px-4 py-2 rounded-lg
-                           font-medium shadow-md hover:bg-gray-700 transition-colors
-                           focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                  >
-                    <FiPlus className="h-5 w-5 mr-2" />
-                    Add Kitchenware
-                  </button>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  <AddItemCard onClick={() => handleAddNew("kitchenware")} label="Add Kitchenware" />
                   {kitchenware.map((item) => (
                     <InventoryItemCard
                       key={item.id}
